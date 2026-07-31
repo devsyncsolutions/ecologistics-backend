@@ -7,6 +7,8 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Build.props", "Directory.Build.props"]
+COPY ["Directory.Packages.props", "Directory.Packages.props"]
 COPY ["src/host/EcoLogistics.Host/EcoLogistics.Host.csproj", "src/host/EcoLogistics.Host/"]
 COPY ["src/modules/userManagement/EcoLogistics.UserManagement.Presentation/EcoLogistics.UserManagement.Presentation.csproj", "src/modules/userManagement/EcoLogistics.UserManagement.Presentation/"]
 COPY ["src/modules/userManagement/EcoLogistics.UserManagement.Infrastructure/EcoLogistics.UserManagement.Infrastructure.csproj", "src/modules/userManagement/EcoLogistics.UserManagement.Infrastructure/"]
