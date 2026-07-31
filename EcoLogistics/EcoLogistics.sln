@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoLogistics.UserManagement
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoLogistics.Host", "src\host\EcoLogistics.Host\EcoLogistics.Host.csproj", "{77A6689E-FF43-43FE-A867-CB9ADBF2FDDB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoLogistics.UserManagement.IntegrationTests", "src\modules\userManagement\EcoLogistics.UserManagement.IntegrationTests\EcoLogistics.UserManagement.IntegrationTests.csproj", "{481D6323-6703-47F2-9B92-780D2ECA3A07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{77A6689E-FF43-43FE-A867-CB9ADBF2FDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77A6689E-FF43-43FE-A867-CB9ADBF2FDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77A6689E-FF43-43FE-A867-CB9ADBF2FDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{481D6323-6703-47F2-9B92-780D2ECA3A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{481D6323-6703-47F2-9B92-780D2ECA3A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{481D6323-6703-47F2-9B92-780D2ECA3A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{481D6323-6703-47F2-9B92-780D2ECA3A07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8AA934BE-F658-455C-B1E0-7881D5BF055E} = {F7EE43E8-CC62-4658-8A0D-EAEDBE3B7E18}
@@ -47,5 +53,6 @@ Global
 		{68BE33B4-A600-4D94-B9BE-59A0072C8243} = {8266B7A3-3D45-40EC-B18A-74BB3AB400DE}
 		{9A24DA8B-0C5E-4735-9705-050B4C289474} = {8266B7A3-3D45-40EC-B18A-74BB3AB400DE}
 		{77A6689E-FF43-43FE-A867-CB9ADBF2FDDB} = {8D8226BC-349F-40F3-A56C-5FB7B55CD12A}
+		{481D6323-6703-47F2-9B92-780D2ECA3A07} = {8266B7A3-3D45-40EC-B18A-74BB3AB400DE}
 	EndGlobalSection
 EndGlobal
