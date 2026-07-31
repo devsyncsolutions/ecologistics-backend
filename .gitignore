@@ -427,3 +427,16 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# idea rider ide files
+.idea/
+.vs/
+bin/
+obj/
+.junie/
+.claude/
+
+*.Development.json
+app_*
+*.DotSettings.user.*
+
