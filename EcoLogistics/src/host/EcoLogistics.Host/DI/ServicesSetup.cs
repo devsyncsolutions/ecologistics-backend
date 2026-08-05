@@ -65,12 +65,6 @@ internal static class ServicesSetup
         {
             if (!builder.Environment.IsDevelopment())
             {
-                options.AddOperationalStore(efOpt =>
-                {
-                    efOpt.UseTickerQDbContext<TickerQDbContext>(o =>
-                        o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")!));
-                });
-
                 options.AddStackExchangeRedis(redis =>
                 {
                     redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
@@ -78,10 +72,18 @@ internal static class ServicesSetup
                 });
             }
 
-            options.AddDashboard(options =>
+            options.AddOperationalStore(efOpt =>
             {
-                options.SetBasePath("/jobs");
-                options.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
+                efOpt.UseTickerQDbContext<TickerQDbContext>(o =>
+                    o.UseNpgsql(
+                        builder.Configuration.GetConnectionString("DefaultConnection")!,
+                        b => b.MigrationsAssembly(typeof(ServicesSetup).Assembly.GetName().Name)));
+            });
+
+            options.AddDashboard(opt =>
+            {
+                opt.SetBasePath("/jobs");
+                opt.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
             });
         });
     }

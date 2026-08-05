@@ -45,8 +45,6 @@ internal static class PipelineSetup
         versionGroup.MapCarter();
 
         app.UseTickerQ();
-        if(!app.Environment.IsDevelopment())
-            SetupMigrationsForTickerQContexts(app).Wait();
 
         return app;
     }
@@ -61,12 +59,5 @@ internal static class PipelineSetup
                 .WithTheme(ScalarTheme.Solarized)
                 .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
         });
-    }
-
-    private static async Task SetupMigrationsForTickerQContexts(WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var tickerDb = scope.ServiceProvider.GetRequiredService<TickerQDbContext>();
-        await tickerDb.Database.MigrateAsync().ConfigureAwait(false);
     }
 }
