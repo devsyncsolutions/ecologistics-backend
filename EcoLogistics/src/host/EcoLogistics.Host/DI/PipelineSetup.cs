@@ -67,6 +67,6 @@ internal static class PipelineSetup
     {
         using var scope = app.Services.CreateScope();
         var tickerDb = scope.ServiceProvider.GetRequiredService<TickerQDbContext>();
-        await tickerDb.Database.MigrateAsync();
+        await tickerDb.Database.MigrateAsync().ConfigureAwait(false);
     }
 }
