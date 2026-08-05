@@ -5,6 +5,6 @@ namespace EcoLogistics.UserManagement.Core.Models;
 
 public static class CacheKeys
 {
-    public static string GetRequestKey(string requestId) => $"Request:{requestId}";
+    public static string GetRequestKey<TCommand>(string requestId) => $"idempotency:{typeof(TCommand).Name}:{requestId}";
     public static string GetUserDetailsKey(string userId) => $"UserDetails:{userId}";
 }

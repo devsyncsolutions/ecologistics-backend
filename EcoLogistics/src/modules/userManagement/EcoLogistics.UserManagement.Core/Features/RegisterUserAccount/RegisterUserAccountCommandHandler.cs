@@ -17,7 +17,7 @@ public class RegisterUserAccountCommandHandler(
         if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
         var requestResponse = await cache.GetOrSetAsync(
-            CacheKeys.GetRequestKey(command.RequestId),
+            CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
             async _ => await RegisterUserAccountAsync(authenticationService, command, cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);

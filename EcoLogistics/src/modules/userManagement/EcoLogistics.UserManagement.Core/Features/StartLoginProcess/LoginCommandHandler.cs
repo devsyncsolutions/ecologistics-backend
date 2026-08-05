@@ -18,7 +18,7 @@ public class LoginCommandHandler(
         if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
         var requestResponse = await cache.GetOrSetAsync(
-            CacheKeys.GetRequestKey(command.RequestId),
+            CacheKeys.GetRequestKey<LoginCommand>(command.RequestId),
             async _ => await LoginAsync(authenticationServices, bus, command, cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);
