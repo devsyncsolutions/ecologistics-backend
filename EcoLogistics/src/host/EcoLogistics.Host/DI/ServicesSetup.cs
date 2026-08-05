@@ -1,6 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Claims;
+using CloudinaryDotNet;
+using EcoLogistics.Host.Middlewares;
+using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
+using EcoLogistics.UserManagement.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Polly.Timeout;
+using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
+using TickerQ.Dashboard.DependencyInjection;
+using TickerQ.DependencyInjection;
+using TickerQ.EntityFrameworkCore.DbContextFactory;
+using TickerQ.EntityFrameworkCore.DependencyInjection;
+
 namespace EcoLogistics.Host.DI;
 
 internal static class ServicesSetup
@@ -9,14 +22,114 @@ internal static class ServicesSetup
     {
         builder.Services.AddUserManagementServices(builder.Configuration);
 
+        ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);
+        ConfigureArkesselMessagingClient(builder);
+        ConfigureUtilities(builder);
+        ConfigureWolverine(builder);
+        ConfigureFusionCache(builder);
+        ConfigureCors(builder);
+        ConfigureRateLimiting(builder);
+        ConfigureCarterEndpoints(builder);
+        ConfigureHealthChecks(builder);
+        ConfigureTickerQ(builder);
+        ConfigureCloudinary(builder);
 
-        builder.Services.AddOpenApi();
+        builder.Services.AddTransient<ITextMessagingService, TextMessagingService>();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddExceptionHandler<GlobalExceptionMiddleware>();
+        builder.Services.AddProblemDetails();
+        builder.Services.AddHttpContextAccessor();
 
         return builder.Build();
     }
 
-    private static void ConfigureLogging(this WebApplicationBuilder builder)
+    private static void ConfigureCloudinary(WebApplicationBuilder builder)
+    {
+        Account account = new(
+            builder.Configuration["Cloudinary:CloudName"],
+            builder.Configuration["Cloudinary:ApiKey"],
+            builder.Configuration["Cloudinary:ApiSecret"]);
+
+        Cloudinary cloudinary = new(account)
+        {
+            Api = { Secure = true }
+        };
+
+        builder.Services.AddSingleton(cloudinary);
+        builder.Services.AddSingleton<IProcessImagesService, ProcessImagesService>();
+    }
+    private static void ConfigureTickerQ(WebApplicationBuilder builder)
+    {
+        builder.Services.AddTickerQ(options =>
+        {
+            if (!builder.Environment.IsDevelopment())
+            {
+                options.AddOperationalStore(efOpt =>
+                {
+                    efOpt.UseTickerQDbContext<TickerQDbContext>(o =>
+                        o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")!));
+                });
+
+                options.AddStackExchangeRedis(redis =>
+                {
+                    redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
+                    redis.InstanceName = "EcoLogisticsCache";
+                });
+            }
+
+            options.AddDashboard(options =>
+            {
+                options.SetBasePath("/jobs");
+                options.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
+            });
+        });
+    }
+    private static void ConfigureHealthChecks(WebApplicationBuilder builder)
+    {
+        if (!builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
+                .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
+                .AddRabbitMQ()
+                .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!);
+        }
+        else
+        {
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
+                .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+        }
+    }
+    private static void ConfigureOpenApiDocumentation(WebApplicationBuilder builder)
+    {
+        builder.Services.AddOpenApi("v1", options =>
+        {
+            options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Info.Title = "EcoLogistics API";
+                document.Info.Version = "v1";
+                document.Info.Description = "EcoLogistics API";
+
+                return Task.CompletedTask;
+            });
+        });
+    }
+    private static void ConfigureCarterEndpoints(WebApplicationBuilder builder) =>
+        builder.Services.AddCarter(null, conf =>
+        {
+            builder.Services.AddEndpointsApiExplorer();
+
+            var modules = typeof(ServicesSetup).Assembly.GetTypes()
+                .Where(t => t.IsAssignableTo(typeof(ICarterModule)) && t is { IsAbstract: false, IsInterface: false })
+                .ToList();
+
+            var withModuleMethod = typeof(CarterConfigurator).GetMethod(nameof(CarterConfigurator.WithModule))!;
+            foreach (var module in modules)
+                withModuleMethod.MakeGenericMethod(module).Invoke(conf, null);
+        });
+    private static void ConfigureLogging(WebApplicationBuilder builder)
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -43,7 +156,7 @@ internal static class ServicesSetup
                     .MinimumLevel.Information()
                     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
 
-                string sentryDsn = builder.Configuration["SENTRY_DSN"] ?? throw new InvalidOperationException("SENTRY_DSN is not set");
+                string sentryDsn = builder.Configuration["Sentry:Dsn"] ?? throw new InvalidOperationException("SENTRY_DSN is not set");
 
                 if (!string.IsNullOrWhiteSpace(sentryDsn))
                 {
@@ -58,5 +171,165 @@ internal static class ServicesSetup
                 }
             });
         }
+    }
+    private static void ConfigureArkesselMessagingClient(WebApplicationBuilder builder)
+    {
+        string baseUrl = builder.Configuration["Arkessel:BaseUrl"]
+                         ?? throw new InvalidOperationException("Arkessel:BaseUrl is not set");
+        string apiKey = builder.Configuration["Arkessel:ApiKey"]
+                        ?? throw new InvalidOperationException("Arkessel:ApiKey is not set");
+
+        builder.Services.AddHttpClient("arkessel", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("api-key", apiKey);
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromSeconds(1);
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
+
+                options.Retry.ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .Handle<HttpRequestException>()
+                    .Handle<TimeoutRejectedException>()
+                    .HandleResult(result => result.StatusCode is >= HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout);
+
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
+    }
+    private static void ConfigureUtilities(WebApplicationBuilder builder)
+    {
+        builder.Services.Configure<Arkessel>(builder.Configuration.GetSection("Arkessel"));
+        builder.Services.AddTransient(sp => sp.GetRequiredService<IOptions<Arkessel>>().Value);
+    }
+    private static void ConfigureWolverine(WebApplicationBuilder builder)
+    {
+        builder.Host.UseWolverine(options =>
+        {
+            if (!builder.Environment.IsDevelopment())
+            {
+                options.UseRabbitMq(builder.Configuration.GetConnectionString("RabbitMQConnection")!)
+                    .AutoProvision()
+                    .UseConventionalRouting();
+
+                options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+            }
+
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IAuthenticationServices>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
+            options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
+        });
+    }
+    private static void ConfigureFusionCache(WebApplicationBuilder builder)
+    {
+        var fusion = builder.Services.AddFusionCache()
+            .WithDefaultEntryOptions(new FusionCacheEntryOptions
+            {
+                Duration = TimeSpan.FromMinutes(5),
+                IsFailSafeEnabled = true,
+                FailSafeMaxDuration = TimeSpan.FromMinutes(30)
+            });
+
+        if (builder.Environment.IsDevelopment())
+            return;
+
+        string redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection")
+            ?? throw new InvalidOperationException("RedisConnection not found in configuration");
+
+        builder.Services.AddStackExchangeRedisCache(redis =>
+        {
+            redis.Configuration = redisConnectionString;
+            redis.InstanceName = "EcoLogisticsCache";
+        });
+
+        fusion
+            .WithSerializer(new FusionCacheSystemTextJsonSerializer())
+            .WithRegisteredDistributedCache()
+            .WithBackplane(new RedisBackplane(new RedisBackplaneOptions
+            {
+                Configuration = redisConnectionString
+            }));
+    }
+    private static void ConfigureCors(WebApplicationBuilder builder)
+    {
+        string[] allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("SecurePolicy", policy =>
+            {
+                policy.SetIsOriginAllowed(origin =>
+                    {
+                        if (string.IsNullOrWhiteSpace(origin)) return false;
+
+                        if (builder.Environment.IsDevelopment())
+                            return origin.Equals("http://localhost:3000", StringComparison.OrdinalIgnoreCase);
+
+                        return allowedOrigins.Any(allowed =>
+                            origin.Equals(allowed, StringComparison.OrdinalIgnoreCase));
+                    })
+                    .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .WithHeaders("Content-Type", "Authorization", "X-Requested-Id")
+                    .AllowCredentials();
+            });
+        });
+    }
+    private static void ConfigureRateLimiting(WebApplicationBuilder builder)
+    {
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    GetPartitionKey(context),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 60,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    }));
+
+
+            options.OnRejected = async (context, token) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter =
+                            ((int)retryAfter.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+
+                    await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Title = "Too Many Requests",
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Detail = $"You have exceeded the rate limit. Please try again after {retryAfter.TotalSeconds} seconds."
+                    }, cancellationToken: token).ConfigureAwait(false);
+                }
+                else
+                {
+                    await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Title = "Too Many Requests",
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Detail = "You have exceeded the rate limit. Please try again later."
+                    }, cancellationToken: token).ConfigureAwait(false);
+                }
+            };
+        });
+    }
+
+    private static string GetPartitionKey(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated != true)
+            return $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+        string userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+        return !string.IsNullOrEmpty(userId)
+            ? $"user:{userId}"
+            : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
     }
 }
