@@ -8,6 +8,7 @@ using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 using EcoLogistics.UserManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Polly.Timeout;
+using RabbitMQ.Client;
 using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
@@ -63,14 +64,19 @@ internal static class ServicesSetup
     {
         builder.Services.AddTickerQ(options =>
         {
-            if (!builder.Environment.IsDevelopment())
+            options.AddDashboard(opt =>
             {
-                options.AddStackExchangeRedis(redis =>
-                {
-                    redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
-                    redis.InstanceName = "EcoLogisticsCache";
-                });
-            }
+                opt.SetBasePath("/jobs");
+                opt.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
+            });
+
+            if (builder.Environment.IsDevelopment()) return;
+
+            options.AddStackExchangeRedis(redis =>
+            {
+                redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
+                redis.InstanceName = "EcoLogisticsCache";
+            });
 
             options.AddOperationalStore(efOpt =>
             {
@@ -79,30 +85,35 @@ internal static class ServicesSetup
                         builder.Configuration.GetConnectionString("DefaultConnection")!,
                         b => b.MigrationsAssembly(typeof(ServicesSetup).Assembly.GetName().Name)));
             });
-
-            options.AddDashboard(opt =>
-            {
-                opt.SetBasePath("/jobs");
-                opt.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
-            });
         });
     }
     private static void ConfigureHealthChecks(WebApplicationBuilder builder)
     {
-        if (!builder.Environment.IsDevelopment())
+        var healthChecks = builder.Services.AddHealthChecks()
+            .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
+            .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+        if (builder.Environment.IsDevelopment())
+            return;
+
+        string rabbitConnectionString = builder.Configuration.GetConnectionString("RabbitMQConnection")!;
+
+        builder.Services.AddSingleton<IConnection>(_ =>
         {
-            builder.Services.AddHealthChecks()
-                .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
-                .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
-                .AddRabbitMQ()
-                .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!);
-        }
-        else
-        {
-            builder.Services.AddHealthChecks()
-                .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
-                .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
-        }
+            var factory = new ConnectionFactory
+            {
+                Uri = new Uri(rabbitConnectionString),
+                AutomaticRecoveryEnabled = true
+            };
+            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        });
+
+        healthChecks
+                .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
+                .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
+                .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
+                    failureStatus: HealthStatus.Unhealthy)
+            .AddUrlGroup(new Uri(builder.Configuration["Arkessel:BaseUrl"]!), name: "Arkessel", tags: ["external"]);
     }
     private static void ConfigureOpenApiDocumentation(WebApplicationBuilder builder)
     {

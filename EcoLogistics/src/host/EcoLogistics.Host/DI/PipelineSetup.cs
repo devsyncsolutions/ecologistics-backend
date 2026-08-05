@@ -20,10 +20,7 @@ internal static class PipelineSetup
                                ForwardedHeaders.XForwardedHost
         });
 
-        if (app.Environment.IsDevelopment())
-        {
-            SetupScalarDocumentation(app);
-        }
+        SetupScalarDocumentation(app);
 
         app.UseHttpsRedirection();
 
