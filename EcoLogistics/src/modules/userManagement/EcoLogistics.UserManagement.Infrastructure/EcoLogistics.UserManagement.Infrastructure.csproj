@@ -10,4 +10,8 @@
       <ProjectReference Include="..\EcoLogistics.UserManagement.Core\EcoLogistics.UserManagement.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CloudinaryDotNet" />
+    </ItemGroup>
+
 </Project>

@@ -1,0 +1,88 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace EcoLogistics.UserManagement.Core.Features.GetUserDetails;
+
+public record UserDetailsResponse(
+    string FirstName,
+    string LastName,
+    string? OtherNames,
+    string PhoneNumber,
+    string DateOfBirth,
+    string Gender,
+    string ProfileImage,
+    string Residence,
+    string ResidenceGps);
+
+public record GetUserDetailsQuery
+{
+    public string? UserId { get; set; }
+    public string? PhoneNumber { get; set; }
+};
+
+public class GetUserDetailsHandler(
+    IUserManagementDbContext dbContext, IFusionCache cache, ILoggedInUserService loggedInUserService)
+{
+    public async Task<UserDetailsResponse> Handle(GetUserDetailsQuery query, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var requestResponse = await cache.GetOrSetAsync(
+            CacheKeys.GetUserDetailsKey(query.UserId ?? query.PhoneNumber ?? loggedInUserService.GetUserId()),
+            async _ => await GetUserDetailsAsync(dbContext, query.UserId, query.PhoneNumber, loggedInUserService.GetUserId(), cancellationToken).ConfigureAwait(false),
+            TimeSpan.FromMinutes(120),
+            cancellationToken).ConfigureAwait(false);
+
+        return requestResponse;
+    }
+
+    private static async Task<UserDetailsResponse> GetUserDetailsAsync(
+        IUserManagementDbContext dbContext,
+        string? userId,
+        string? phoneNumber,
+        string loggedInUserId,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext
+            .ApplicationUsers
+            .AsNoTracking();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(u => u.Id == userId);
+        } else if (!string.IsNullOrEmpty(phoneNumber))
+        {
+            query = query.Where(u => u.PhoneNumber == phoneNumber);
+        }
+        else if (!string.IsNullOrEmpty(loggedInUserId))
+        {
+            query = query.Where(u => u.Id == loggedInUserId);
+        }
+        else
+        {
+            throw new InvalidOperationException("Either UserId or PhoneNumber must be provided.");
+        }
+
+
+
+        var user = await query
+                .Select(u => new UserDetailsResponse(
+                    u.FirstName,
+                    u.LastName,
+                    u.OtherNames ?? string.Empty,
+                    u.PhoneNumber ?? string.Empty,
+                    u.DateOfBirth != null ? u.DateOfBirth.Value.ToShortDateString() : string.Empty,
+                    u.Gender.ToString(),
+                    u.ProfileImageUrl != null ? u.ProfileImageUrl.ToString() : string.Empty,
+                    u.Residence ?? string.Empty,
+                    u.ResidenceGps ?? string.Empty
+                ))
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+        if (user == null)
+            throw new NotFoundException("User not found.");
+
+        return user;
+    }
+}

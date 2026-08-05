@@ -104,18 +104,18 @@ jobs:
                         -p 8080:8080 \
                         -e ASPNETCORE_ENVIRONMENT=Production \
                         -e "ConnectionStrings__DefaultConnection=${{ secrets.PROD_DB_CONNECTION_STRING }}" \
-                        -e "ConnectionStrings__Redis=${{ secrets.PROD_REDIS_CONNECTION_STRING }}" \
-                        -e "RabbitMQ__HostName=${{ secrets.PROD_RABBITMQ_HOST }}" \
-                        -e "RabbitMQ__Port=5671" \
-                        -e "RabbitMQ__VHost=${{ secrets.PROD_RABBITMQ_VHOST }}" \
-                        -e "RabbitMQ__UserName=${{ secrets.PROD_RABBITMQ_USERNAME }}" \
-                        -e "RabbitMQ__Password=${{ secrets.PROD_RABBITMQ_PASSWORD }}" \
+                        -e "ConnectionStrings__RedisConnection=${{ secrets.PROD_REDIS_CONNECTION_STRING }}" \
+                        -e "ConnectionStrings__RabbitMQConnection=${{ secrets.PROD_RABBITMQ_CONNECTION_STRING }}" \
                         -e "Sentry__Dsn=${{ secrets.PROD_SENTRY_DSN }}" \
-                        -e "AppSettings__MainDomain=${{ secrets.PROD_APPSETTINGS_MAIN_DOMAIN }}" \
                         -e "Arkessel__ApiKey=${{ secrets.PROD_ARKESSEL_API_KEY }}" \
                         -e "Arkessel__BaseUrl=${{ secrets.PROD_ARKESSEL_BASE_URL }}" \
                         -e "Arkessel__Sender=${{ secrets.PROD_ARKESSEL_SENDER }}" \
                         -e "Resend__ApiKey=${{ secrets.PROD_RESEND_API_KEY }}" \
+                        -e "JwtSettings__Key=${{ secrets.PROD_JwtSettings_Key }}" \
+                        -e "JwtSettings__Issuer=${{ secrets.PROD_JwtSettings_Issuer }}" \
+                        -e "JwtSettings__Audience=${{ secrets.PROD_JwtSettings_Audience }}" \
+                        -e "JwtSettings__AccessTokenExpirationMinutes=${{ secrets.PROD_JwtSettings_AccessTokenExpirationMinutes }}" \
+                        -e "JwtSettings__RefreshTokenExpirationDays=${{ secrets.PROD_JwtSettings_RefreshTokenExpirationDays }}" \
                         "$IMAGE_REF"; then
                         echo "❌ Failed to start container. Rolling back..."
                         if [ -n "$PREVIOUS_IMAGE_ID" ]; then
