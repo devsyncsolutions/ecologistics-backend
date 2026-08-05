@@ -16,7 +16,7 @@ public class GetTokenCommandHandler(
         if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
         var requestResponse = await cache.GetOrSetAsync(
-            CacheKeys.GetRequestKey(command.RequestId),
+            CacheKeys.GetRequestKey<GetTokenCommand>(command.RequestId),
             async _ => await GetTokenAsync(authenticationServices, command, cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);

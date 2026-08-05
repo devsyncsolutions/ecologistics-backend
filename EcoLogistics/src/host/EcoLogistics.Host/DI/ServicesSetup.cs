@@ -141,6 +141,8 @@ internal static class ServicesSetup
             var withModuleMethod = typeof(CarterConfigurator).GetMethod(nameof(CarterConfigurator.WithModule))!;
             foreach (var module in modules)
                 withModuleMethod.MakeGenericMethod(module).Invoke(conf, null);
+
+            conf.WithResponseNegotiator<XmlResponseNegotiator>();
         });
     private static void ConfigureLogging(WebApplicationBuilder builder)
     {
