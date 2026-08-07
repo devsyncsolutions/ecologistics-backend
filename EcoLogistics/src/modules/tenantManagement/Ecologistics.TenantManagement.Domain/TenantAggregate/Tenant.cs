@@ -87,7 +87,7 @@ public class Tenant : BaseAggregate<TenantId>
         ArgumentNullException.ThrowIfNull(userId);
 
         if(_members.Any(m => m.UserId == userId))
-            throw new BadHttpRequestException("User already is a member of this tenant.");
+            throw new BadRequestException("User already is a member of this tenant.");
 
         var newMember = new Member(Id, false, userId) { Id = new MemberId(Guid.CreateVersion7()) };
 
@@ -110,7 +110,7 @@ public class Tenant : BaseAggregate<TenantId>
         ArgumentNullException.ThrowIfNull(companyPurposeId);
 
         if(_companyPurposes.Any(cp => cp.CompanyPurposeId == companyPurposeId))
-            throw new BadHttpRequestException("Company purpose already exists.");
+            throw new BadRequestException("Company purpose already exists.");
 
         var newCompanyPurpose = new TenantCompanyPurpose(Id, companyPurposeId) { Id = Guid.CreateVersion7() };
 

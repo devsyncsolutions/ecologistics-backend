@@ -47,13 +47,13 @@ public sealed class GlobalExceptionMiddleware : IExceptionHandler
                 };
                 break;
 
-            case BadHttpRequestException ex:
+            case BadHttpRequestException or BadRequestException:
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = new ProblemDetails
                 {
                     Status = StatusCodes.Status400BadRequest,
                     Title = "Bad Request",
-                    Detail = ex.Message
+                    Detail = exception.Message
                 };
                 break;
 

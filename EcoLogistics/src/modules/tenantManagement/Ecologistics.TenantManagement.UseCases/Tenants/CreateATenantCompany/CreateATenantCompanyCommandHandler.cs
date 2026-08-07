@@ -44,7 +44,7 @@ public class CreateATenantCompanyCommandHandler(
             .ConfigureAwait(false);
 
         if (companyNameAlreadyUsed)
-            throw new BadHttpRequestException("Company name already used.");
+            throw new BadRequestException("Company name already used.");
 
         List<CompanyPurposeId> companyPurposeIds = [];
 
@@ -69,7 +69,7 @@ public class CreateATenantCompanyCommandHandler(
                     null,
                     null);
 
-                throw new BadHttpRequestException("Collector company purpose not found.");
+                throw new BadRequestException("Collector company purpose not found.");
             }
 
             companyPurposeIds.Add(collectorPurposeId);
