@@ -440,4 +440,5 @@ obj/
 *.Development.json
 app_*
 *.DotSettings.user.*
+*.DotSettngs
 

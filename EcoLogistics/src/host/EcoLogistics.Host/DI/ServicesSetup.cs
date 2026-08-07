@@ -3,7 +3,12 @@
 
 using System.Security.Claims;
 using CloudinaryDotNet;
+using Ecologistics.Common.Interfaces;
 using EcoLogistics.Host.Middlewares;
+using Ecologistics.TenantManagement.Infrastructure.Data;
+using Ecologistics.TenantManagement.Presentation.DI;
+using Ecologistics.TenantManagement.UseCases.Interfaces;
+using Ecologistics.TenantManagement.UseCases.Tenants.CreateATenantCompany;
 using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 using EcoLogistics.UserManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +27,7 @@ internal static class ServicesSetup
     public static WebApplication AddServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddUserManagementServices(builder.Configuration);
+        builder.Services.AddTenantManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);
@@ -41,6 +47,12 @@ internal static class ServicesSetup
         builder.Services.AddExceptionHandler<GlobalExceptionMiddleware>();
         builder.Services.AddProblemDetails();
         builder.Services.AddHttpContextAccessor();
+
+        builder.Host.UseDefaultServiceProvider((context, options) =>
+        {
+            options.ValidateScopes = true;
+            options.ValidateOnBuild = true;
+        });
 
         return builder.Build();
     }
@@ -91,6 +103,7 @@ internal static class ServicesSetup
     {
         var healthChecks = builder.Services.AddHealthChecks()
             .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
+            .AddDbContextCheck<TenantManagementDbContext>("TenantManagementDbContext", HealthStatus.Unhealthy)
             .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
         if (builder.Environment.IsDevelopment())
@@ -109,11 +122,10 @@ internal static class ServicesSetup
         });
 
         healthChecks
-                .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
-                .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
-                .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
-                    failureStatus: HealthStatus.Unhealthy)
-            .AddUrlGroup(new Uri(builder.Configuration["Arkessel:BaseUrl"]!), name: "Arkessel", tags: ["external"]);
+            .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
+            .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
+            .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
+                failureStatus: HealthStatus.Unhealthy);
     }
     private static void ConfigureOpenApiDocumentation(WebApplicationBuilder builder)
     {
@@ -236,7 +248,9 @@ internal static class ServicesSetup
             options.CodeGeneration.AlwaysUseServiceLocationFor<IAuthenticationServices>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(CreateATenantCompanyCommandHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

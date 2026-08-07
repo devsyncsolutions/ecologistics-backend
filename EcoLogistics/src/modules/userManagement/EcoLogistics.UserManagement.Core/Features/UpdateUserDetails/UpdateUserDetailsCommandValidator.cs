@@ -38,8 +38,9 @@ public sealed class UpdateUserDetailsCommandValidator : AbstractValidator<Update
             .When(x => !string.IsNullOrWhiteSpace(x.DateOfBirth));
     }
 
-    private static bool BeAValidDate(string arg)
+    private static bool BeAValidDate(string? arg)
     {
-        return DateTime.TryParseExact(arg, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        return !string.IsNullOrWhiteSpace(arg) &&
+               DateOnly.TryParseExact(arg, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
     }
 }

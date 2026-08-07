@@ -6,6 +6,8 @@ using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 using EcoLogistics.UserManagement.Tests.Mock;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Wolverine;
+using Wolverine.Runtime;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace EcoLogistics.UserManagement.Tests.UnitTests.RegisterUserAccount;

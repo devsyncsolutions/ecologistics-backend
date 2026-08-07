@@ -22,7 +22,7 @@ public sealed class RegisterUserAccountEndpoint : ICarterModule
 
     private static async Task<IResult> Handle(
         [FromHeader(Name = "X-Request-ID")] string requestId,
-        [FromBody] RegisterUserAccountCommand command,
+        [FromBody] RegisterUserAccountRequest request,
         [FromServices] IMessageBus bus,
         CancellationToken cancellationToken)
     {
@@ -36,7 +36,14 @@ public sealed class RegisterUserAccountEndpoint : ICarterModule
             });
         }
 
+        var command = new RegisterUserAccountCommand(
+            request.FirstName,
+            request.LastName,
+            request.OtherNames,
+            request.Gender,
+            request.PhoneNumber);
         command.RequestId = requestId;
+
         var result = await bus.InvokeAsync<RegisterUserAccountResponse>(command, cancellationToken).ConfigureAwait(false);
 
         return Results.CreatedAtRoute(

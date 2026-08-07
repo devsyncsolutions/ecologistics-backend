@@ -8,7 +8,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.Redis" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
         <PackageReference Include="AspNetCore.HealthChecks.Uris" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,6 +16,7 @@
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+        <PackageReference Include="Microsoft.OpenApi" />
         <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Sentry.Serilog" />
         <PackageReference Include="Serilog.AspNetCore" />
@@ -26,6 +27,7 @@
         <PackageReference Include="TickerQ.EntityFrameworkCore" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\modules\tenantManagement\Ecologistics.TenantManagement.Presentation\Ecologistics.TenantManagement.Presentation.csproj" />
       <ProjectReference Include="..\..\modules\userManagement\EcoLogistics.UserManagement.Presentation\EcoLogistics.UserManagement.Presentation.csproj" />
     </ItemGroup>
     <ItemGroup>

@@ -14,11 +14,14 @@ public class RegisterUserAccountCommandHandler(
 
         var validation = new RegisterUserAccountCommandValidator();
         var validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
-        if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
 
         var requestResponse = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
-            async _ => await RegisterUserAccountAsync(authenticationService, command, cancellationToken).ConfigureAwait(false),
+            async _ => await RegisterUserAccountAsync(authenticationService, command,  cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);
 

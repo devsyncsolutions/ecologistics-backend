@@ -24,4 +24,12 @@
       <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\common\Ecologistics.Common\Ecologistics.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Exceptions\" />
+    </ItemGroup>
+
 </Project>
