@@ -3,23 +3,6 @@
 
 namespace EcoLogistics.UserManagement.Core.Features.GetUserDetails;
 
-public record UserDetailsResponse(
-    string FirstName,
-    string LastName,
-    string? OtherNames,
-    string PhoneNumber,
-    string DateOfBirth,
-    string Gender,
-    string ProfileImage,
-    string Residence,
-    string ResidenceGps);
-
-public record GetUserDetailsQuery
-{
-    public string? UserId { get; set; }
-    public string? PhoneNumber { get; set; }
-};
-
 public class GetUserDetailsHandler(
     IUserManagementDbContext dbContext, IFusionCache cache, ILoggedInUserService loggedInUserService)
 {
@@ -80,9 +63,6 @@ public class GetUserDetailsHandler(
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-        if (user == null)
-            throw new NotFoundException("User not found.");
-
-        return user;
+        return user ?? throw new NotFoundException("User not found.");
     }
 }

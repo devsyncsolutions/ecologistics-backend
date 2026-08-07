@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Ecologistics.Common.Interfaces;
+using Ecologistics.Common.Utilities;
+
 namespace EcoLogistics.Host.Services;
 
 public class TextMessagingService(

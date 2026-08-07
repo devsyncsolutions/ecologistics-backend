@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace EcoLogistics.UserManagement.Core.Models;
+namespace Ecologistics.Common.Abstractions;
 
 public interface IBaseEntity
 {
@@ -12,4 +12,9 @@ public interface IBaseEntity
     bool IsDeleted { get; set; }
     DateTimeOffset? DeletedAt { get; set; }
     string? DeletedBy { get; set; }
+}
+
+public interface IBaseEntity<TKey> : IBaseEntity
+{
+    public TKey Id { get; set; }
 }

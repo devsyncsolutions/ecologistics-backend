@@ -10,4 +10,11 @@ public record RegisterUserAccountCommand(
     string Gender,
     string PhoneNumber) : BaseRequest;
 
+public record RegisterUserAccountRequest(
+    string FirstName,
+    string LastName,
+    string? OtherNames,
+    string Gender,
+    string PhoneNumber);
+
 public record RegisterUserAccountResponse(string UserId);
