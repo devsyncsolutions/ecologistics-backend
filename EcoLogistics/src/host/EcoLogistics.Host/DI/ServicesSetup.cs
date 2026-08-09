@@ -5,6 +5,10 @@ using System.Security.Claims;
 using CloudinaryDotNet;
 using Ecologistics.Common.Interfaces;
 using EcoLogistics.Host.Middlewares;
+using Ecologistics.PickupManagement.Infrastructure.Data;
+using Ecologistics.PickupManagement.Infrastructure.Services;
+using Ecologistics.PickupManagement.UseCases.DI;
+using Ecologistics.PickupManagement.UseCases.GetPickupJobs;
 using Ecologistics.TenantManagement.Infrastructure.Data;
 using Ecologistics.TenantManagement.Presentation.DI;
 using Ecologistics.TenantManagement.UseCases.Interfaces;
@@ -28,6 +32,7 @@ internal static class ServicesSetup
     {
         builder.Services.AddUserManagementServices(builder.Configuration);
         builder.Services.AddTenantManagementServices(builder.Configuration);
+        builder.Services.AddPickupManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);
@@ -104,6 +109,7 @@ internal static class ServicesSetup
         var healthChecks = builder.Services.AddHealthChecks()
             .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
             .AddDbContextCheck<TenantManagementDbContext>("TenantManagementDbContext", HealthStatus.Unhealthy)
+            .AddDbContextCheck<PickupManagementDbContext>("PickupManagementDbContext", HealthStatus.Unhealthy)
             .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
         if (builder.Environment.IsDevelopment())
@@ -249,8 +255,10 @@ internal static class ServicesSetup
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IPickupManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(CreateATenantCompanyCommandHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(GetPickupJobsQueryHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

@@ -67,6 +67,14 @@ public sealed class GlobalExceptionMiddleware : IExceptionHandler
                 };
                 break;
 
+            case ForbiddenRequestException ex:
+                httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+                response = new ProblemDetails
+                {
+                    Status = StatusCodes.Status403Forbidden, Title = "Forbidden", Detail = ex.Message
+                };
+                break;
+
             default:
                 _logger.LogErrorMessage($"Exception: {exception.Message}\nStack Trace: {exception.StackTrace}", null, null, httpContext.TraceIdentifier);
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;

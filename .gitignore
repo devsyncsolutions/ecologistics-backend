@@ -442,3 +442,4 @@ app_*
 *.DotSettings.user.*
 *.DotSettngs
 
+docker-compose.yml

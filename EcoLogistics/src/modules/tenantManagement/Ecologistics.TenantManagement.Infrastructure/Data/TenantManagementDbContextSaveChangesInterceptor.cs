@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Ecologistics.Common.Audits.SaveUpdateAudit;
 using Ecologistics.Common.Exceptions;
 using Ecologistics.Common.Interfaces;
-using Ecologistics.TenantManagement.UseCases.Audits.SaveUpdateAudit;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -87,7 +87,24 @@ public sealed class TenantManagementDbContextSaveChangesInterceptor : SaveChange
             .ToArray();
 
         var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToArray();
-        await _bus.PublishAsync(domainEvents).ConfigureAwait(false);
+        if (domainEvents.Length != 0)
+        {
+            try
+            {
+                foreach (var @event in domainEvents)
+                {
+                    await _bus.PublishAsync(@event).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogErrorMessage(
+                    $"Error publishing domain events. Stack: {e.StackTrace} and Message: {e.Message}",
+                    null,
+                    _loggedInUserService.GetUserId(),
+                    Activity.Current?.TraceId.ToString() ?? string.Empty);
+            }
+        }
 
         foreach (var aggregate in aggregates)
         {

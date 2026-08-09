@@ -16,8 +16,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" />
       <PackageReference Include="Microsoft.AspNetCore.Http" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+      <PackageReference Include="NGeoHash" />
     </ItemGroup>
 
 </Project>
