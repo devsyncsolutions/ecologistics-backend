@@ -19,7 +19,7 @@ public class UpdateUserDetailsCommandHandler(
         if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
 
         var existingUser = await dbContext.ApplicationUsers
-            .FirstOrDefaultAsync(u => u.Id == loggedInUserService.GetUserId(), cancellationToken)
+            .FirstOrDefaultAsync(u => u.UserName == loggedInUserService.GetUserId(), cancellationToken)
             .ConfigureAwait(false);
 
         if (existingUser is null)

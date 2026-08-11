@@ -37,7 +37,7 @@ public class ProcessProfileImageJob(
 
         var user = await dbContext
             .ApplicationUsers
-            .Where(u => u.Id == context.Request.UserId)
+            .Where(u => u.UserName == context.Request.UserId)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -53,6 +53,7 @@ public class ProcessProfileImageJob(
         }
 
         user.ProfileImageUrl = new Uri(imageUrl);
+        dbContext.ApplicationUsers.Update(user);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }
