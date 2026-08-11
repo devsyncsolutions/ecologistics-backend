@@ -35,5 +35,9 @@ public class ApplicationUserConfigurations : IEntityTypeConfiguration<Applicatio
 
         builder.Property(x => x.ResidenceGps)
             .HasMaxLength(13);
+
+        builder.Property(x => x.DistrictId)
+            .IsRequired()
+            .HasDefaultValue(Guid.Parse("133e4567-e89b-12d3-a456-426655440000"));
     }
 }

@@ -89,6 +89,8 @@ internal sealed class PickupConfigurations : IEntityTypeConfiguration<Pickup>
                 .HasMaxLength(500);
         });
 
+        builder.ComplexProperty(x => x.RecurringProperties);
+
         builder.Property(x => x.Reference)
             .HasMaxLength(7)
             .IsRequired();

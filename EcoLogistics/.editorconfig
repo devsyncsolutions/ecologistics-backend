@@ -38,6 +38,7 @@ dotnet_diagnostic.CS8618.severity = none
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1304.severity = none
 dotnet_diagnostic.CA1308.severity = none
+dotnet_diagnostic.CA1311.severity = none
 
 # Indentation preferences
 csharp_indent_block_contents = true

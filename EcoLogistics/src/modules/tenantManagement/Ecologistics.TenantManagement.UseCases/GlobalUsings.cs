@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 global using Ecologistics.Common.Contracts;
+global using Ecologistics.Common.Contracts.Commands;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.Common.Interfaces;
 global using Ecologistics.Common.Utilities;

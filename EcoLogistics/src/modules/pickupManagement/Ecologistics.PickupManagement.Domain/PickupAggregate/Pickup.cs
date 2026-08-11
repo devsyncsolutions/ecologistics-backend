@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Ecologistics.PickupManagement.Domain.Commons.Utility;
-
 namespace Ecologistics.PickupManagement.Domain.PickupAggregate;
 
 public class Pickup : BaseAggregate<PickupId>
@@ -24,10 +22,13 @@ public class Pickup : BaseAggregate<PickupId>
     public string Reference { get; private set; } = string.Empty;
     public string WasteContentName { get; set; } = string.Empty;
     public Priority Priority { get; set; } = Priority.High;
+    public RecurringProperties? RecurringProperties { get; private set; }
 
     public static Pickup Create(
-        PickupFeeId pickupFeeId, PickupType type, double latitude, double longitude, string formattedAddress, string ghanaPostGpsAddress,
-        string? landmark, string? contactName, string? contactPhone, string? extraNotes, DateTimeOffset scheduledForPickupAt, string wasteContentName, Priority? priority, string reference)
+        PickupFeeId pickupFeeId, PickupType type, double latitude, double longitude, string formattedAddress,
+        string ghanaPostGpsAddress, string? landmark, string? contactName, string? contactPhone,
+        string? extraNotes, DateTimeOffset scheduledForPickupAt, string wasteContentName, Priority? priority,
+        string reference, int daysIntervalForPickupIfRecurring)
     {
         var point = CreatePointCalculation.CreatePoint(longitude, latitude);
         var timeStamp = new TimeStamp(scheduledForPickupAt);
@@ -50,6 +51,11 @@ public class Pickup : BaseAggregate<PickupId>
             WasteContentName = wasteContentName,
             Priority = priority ?? Priority.High
         };
+
+        if (type == PickupType.Recurring)
+        {
+            newPickup.RecurringProperties = new RecurringProperties(daysIntervalForPickupIfRecurring, scheduledForPickupAt, newPickup.Id);
+        }
 
         newPickup.AddDomainEvent(new PickupCreatedEvent(newPickup.Id));
 

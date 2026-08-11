@@ -72,7 +72,7 @@ public class GetPickupJobsQueryHandler(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var result = new PagedResponse<PickupJobDto>
+        return new PagedResponse<PickupJobDto>
         {
             Items = pagedResult,
             TotalCount = totalCount,
@@ -80,6 +80,5 @@ public class GetPickupJobsQueryHandler(
             PageSize = query.PageSize,
             TotalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize)
         };
-        return result;
     }
 }

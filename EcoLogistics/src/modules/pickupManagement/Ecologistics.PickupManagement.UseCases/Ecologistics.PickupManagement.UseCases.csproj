@@ -17,8 +17,4 @@
       <ProjectReference Include="..\Ecologistics.PickupManagement.Infrastructure\Ecologistics.PickupManagement.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="CreateAPickupJob\" />
-    </ItemGroup>
-
 </Project>

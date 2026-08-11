@@ -4,6 +4,7 @@
 global using Ecologistics.Common.Abstractions;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.PickupManagement.Domain.Commons.Enums;
+global using Ecologistics.PickupManagement.Domain.Commons.Utility;
 global using Ecologistics.PickupManagement.Domain.Commons.ValueObjects;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate.Enums;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate.Events;

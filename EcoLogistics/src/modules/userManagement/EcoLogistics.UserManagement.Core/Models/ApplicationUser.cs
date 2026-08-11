@@ -21,4 +21,5 @@ public class ApplicationUser : IdentityUser, IBaseEntity
     public DateTimeOffset? DeletedAt { get; set; }
     public string? DeletedBy { get; set; }
     public TimeSpan OtpCodeExpiresAt { get; set; }
+    public Guid DistrictId { get; set; }
 }

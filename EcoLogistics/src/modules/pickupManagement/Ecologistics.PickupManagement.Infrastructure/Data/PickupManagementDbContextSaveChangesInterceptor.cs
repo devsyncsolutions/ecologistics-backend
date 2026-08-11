@@ -34,10 +34,22 @@ public sealed class PickupManagementDbContextSaveChangesInterceptor : SaveChange
     {
         ArgumentNullException.ThrowIfNull(eventData);
 
-        DbContext? context = await ModifyAuditableProperties(eventData).ConfigureAwait(false);
-        await DispatchDomainEvents(context).ConfigureAwait(false);
+        await ModifyAuditableProperties(eventData).ConfigureAwait(false);
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
+    }
+
+    public override async ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result,
+        CancellationToken cancellationToken = new CancellationToken())
+    {
+        ArgumentNullException.ThrowIfNull(eventData);
+
+        DbContext? context = eventData.Context;
+        if (context is null) await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
+
+        await DispatchDomainEvents(context).ConfigureAwait(false);
+
+        return await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask<DbContext?> ModifyAuditableProperties(DbContextEventData eventData)

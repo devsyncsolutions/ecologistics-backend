@@ -10,4 +10,7 @@ public class LoggedInUserService(IHttpContextAccessor httpContextAccessor)
 {
     public string GetUserId() =>
         httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+    public string GetDistrictId() =>
+    httpContextAccessor.HttpContext?.User?.FindFirstValue("districtId") ?? string.Empty;
 }

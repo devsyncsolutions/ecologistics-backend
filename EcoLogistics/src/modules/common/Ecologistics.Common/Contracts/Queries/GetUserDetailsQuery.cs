@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Ecologistics.Common.Contracts;
+namespace Ecologistics.Common.Contracts.Queries;
 
 public record GetUserDetailsQuery
 {
@@ -18,4 +18,11 @@ public record UserDetailsResponse(
     string Gender,
     string ProfileImage,
     string Residence,
-    string ResidenceGps);
+    string ResidenceGps)
+{
+    public DistrictDto District { get; set; }
+}
+
+public record DistrictDto(
+    string Id,
+    string Name);

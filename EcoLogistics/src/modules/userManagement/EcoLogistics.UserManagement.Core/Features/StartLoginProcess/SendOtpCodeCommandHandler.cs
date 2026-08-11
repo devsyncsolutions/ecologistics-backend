@@ -20,9 +20,11 @@ public class SendOtpCodeCommandHandler(
         if(user is null)
             throw new ArgumentNullException($"User with phone number {command.PhoneNumber} not found.");
 
-        string message = @$"
-            Dear {user.FirstName} {user.LastName},
-            Your OTP code for EcoLogistics login is: {command.OtpCode}.";
+        string message = $@"
+Hi! {user.FirstName} {user.LastName},
+
+Your OTP code for EcoLogistics login is: {command.OtpCode}.
+        ";
 
         await textMessagingService
             .SendAsync(command.PhoneNumber, message, command.RequestId, cancellationToken)
