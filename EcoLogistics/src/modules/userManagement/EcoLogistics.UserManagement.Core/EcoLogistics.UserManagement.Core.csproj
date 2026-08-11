@@ -28,8 +28,4 @@
       <ProjectReference Include="..\..\common\Ecologistics.Common\Ecologistics.Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Exceptions\" />
-    </ItemGroup>
-
 </Project>

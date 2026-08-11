@@ -49,6 +49,11 @@ namespace EcoLogistics.UserManagement.Infrastructure.Data.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("DistrictId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("133e4567-e89b-12d3-a456-426655440000"));
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");

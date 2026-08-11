@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Ecologistics.Common.Audits.SaveUpdateAudit;
 using Ecologistics.Common.Exceptions;
 using Ecologistics.Common.Interfaces;
-using Ecologistics.TenantManagement.UseCases.Audits.SaveUpdateAudit;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -34,10 +34,24 @@ public sealed class TenantManagementDbContextSaveChangesInterceptor : SaveChange
     {
         ArgumentNullException.ThrowIfNull(eventData);
 
-        DbContext? context = await ModifyAuditableProperties(eventData).ConfigureAwait(false);
-        await DispatchDomainEvents(context).ConfigureAwait(false);
+        await ModifyAuditableProperties(eventData).ConfigureAwait(false);
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
+    }
+
+    public override async ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result,
+        CancellationToken cancellationToken = new CancellationToken())
+    {
+        ArgumentNullException.ThrowIfNull(eventData);
+
+        var context = eventData.Context;
+
+        if (context is null)
+            return await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
+
+        await DispatchDomainEvents(context).ConfigureAwait(false);
+
+        return await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask<DbContext?> ModifyAuditableProperties(DbContextEventData eventData)
@@ -87,7 +101,24 @@ public sealed class TenantManagementDbContextSaveChangesInterceptor : SaveChange
             .ToArray();
 
         var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToArray();
-        await _bus.PublishAsync(domainEvents).ConfigureAwait(false);
+        if (domainEvents.Length != 0)
+        {
+            try
+            {
+                foreach (var @event in domainEvents)
+                {
+                    await _bus.PublishAsync(@event).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogErrorMessage(
+                    $"Error publishing domain events. Stack: {e.StackTrace} and Message: {e.Message}",
+                    null,
+                    _loggedInUserService.GetUserId(),
+                    Activity.Current?.TraceId.ToString() ?? string.Empty);
+            }
+        }
 
         foreach (var aggregate in aggregates)
         {

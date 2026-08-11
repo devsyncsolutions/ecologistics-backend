@@ -79,7 +79,8 @@ public class CreateATenantCompanyCommandHandler(
             companyName: command.CompanyName,
             logoUrl: null,
             createdBy: command.UserId,
-            companyPurposeIds: companyPurposeIds);
+            companyPurposeIds: companyPurposeIds,
+            CacheKeys.GenerateARegistrationNumber(8));
 
         await dbContext.Tenants.AddAsync(newTenant, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

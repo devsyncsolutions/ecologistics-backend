@@ -52,7 +52,7 @@ public sealed class AuthenticationServices(
 
         var result = await signInManager.PasswordSignInAsync(user.UserName!, otpCode, false, lockoutOnFailure: false).ConfigureAwait(false);
 
-        if(!result.Succeeded)
+        if (!result.Succeeded)
             throw new BadHttpRequestException("Invalid OTP code.");
 
         string accessToken = await GenerateAccessToken(user).ConfigureAwait(false);
@@ -82,7 +82,8 @@ public sealed class AuthenticationServices(
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("phone", user.PhoneNumber!)
+            new Claim("phone", user.PhoneNumber!),
+            new Claim("districtId", user.DistrictId.ToString())
         }
             .Union(userClaims)
             .Union(roleClaims);

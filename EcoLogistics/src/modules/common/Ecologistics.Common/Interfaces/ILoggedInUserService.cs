@@ -6,4 +6,5 @@ namespace Ecologistics.Common.Interfaces;
 public interface ILoggedInUserService
 {
     string GetUserId();
+    string GetDistrictId();
 }

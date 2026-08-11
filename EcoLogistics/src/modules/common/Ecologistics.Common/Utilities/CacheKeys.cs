@@ -7,4 +7,22 @@ public static class CacheKeys
 {
     public static string GetRequestKey<TCommand>(string requestId) => $"idempotency:{typeof(TCommand).Name}:{requestId}";
     public static string GetUserDetailsKey(string userId) => $"UserDetails:{userId}";
+    public static string GetPickupJobsKey(string geoKey) => $"PickupJobs:{geoKey}";
+
+    private const string Alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+    public static string GenerateARegistrationNumber(int count)
+    {
+        Span<byte> randomBytes = stackalloc byte[count];
+        RandomNumberGenerator.Fill(randomBytes);
+
+        Span<char> result = stackalloc char[count];
+        for (int i = 0; i < count; i++)
+        {
+            result[i] = Alphabet[randomBytes[i] % Alphabet.Length];
+        }
+
+        return new string(result);
+    }
+
+    public static string GetPickupFeesKey(string districtId) => $"PickupFees:{districtId}";
 }

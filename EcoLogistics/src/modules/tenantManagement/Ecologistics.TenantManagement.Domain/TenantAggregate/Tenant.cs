@@ -19,7 +19,7 @@ public class Tenant : BaseAggregate<TenantId>
     public TenantStatus Status { get; private set; } = TenantStatus.Unverified;
     public decimal TotalBalance { get; private set; } = decimal.Zero;
 
-    public static Tenant Create(string companyName, Uri? logoUrl, string createdBy, IReadOnlyList<CompanyPurposeId> companyPurposeIds)
+    public static Tenant Create(string companyName, Uri? logoUrl, string createdBy, IReadOnlyList<CompanyPurposeId> companyPurposeIds, string registrationNumber)
     {
         ArgumentNullException.ThrowIfNull(createdBy);
         ArgumentNullException.ThrowIfNull(companyPurposeIds);
@@ -28,7 +28,7 @@ public class Tenant : BaseAggregate<TenantId>
         {
             Id = new TenantId(Guid.CreateVersion7()),
             CompanyName = companyName,
-            RegistrationNumber = GenerateARegistrationNumber(),
+            RegistrationNumber = registrationNumber,
             LogoUrl = logoUrl,
             Status = TenantStatus.Unverified,
             TotalBalance = decimal.Zero
@@ -115,20 +115,5 @@ public class Tenant : BaseAggregate<TenantId>
         var newCompanyPurpose = new TenantCompanyPurpose(Id, companyPurposeId) { Id = Guid.CreateVersion7() };
 
         _companyPurposes.Add(newCompanyPurpose);
-    }
-
-    private const string Alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
-    private static string GenerateARegistrationNumber()
-    {
-        Span<byte> randomBytes = stackalloc byte[8];
-        RandomNumberGenerator.Fill(randomBytes);
-
-        Span<char> result = stackalloc char[8];
-        for (int i = 0; i < 8; i++)
-        {
-            result[i] = Alphabet[randomBytes[i] % Alphabet.Length];
-        }
-
-        return new string(result);
     }
 }
