@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.VisualBasic;
 using Wolverine;
 
 namespace EcoLogistics.UserManagement.Tests.Mock;
@@ -9,6 +10,8 @@ internal sealed class MockMessageBus : IMessageBus
 {
     public int PublishAsyncCallCount { get; private set; }
     public object? LastPublishedMessage { get; private set; }
+    public int InvokeAsyncCallCount { get; private set; }
+    public object? LastInvokedMessage { get; private set; }
 
     public string? TenantId
     {
@@ -33,7 +36,13 @@ internal sealed class MockMessageBus : IMessageBus
     public ValueTask BroadcastToTopicAsync(string topicName, object message, DeliveryOptions? options = null) => throw new NotImplementedException();
     public Task InvokeAsync(object message, CancellationToken cancellation = default, TimeSpan? timeout = default) => throw new NotImplementedException();
     public Task InvokeAsync(object message, DeliveryOptions options, CancellationToken cancellation = default, TimeSpan? timeout = default) => throw new NotImplementedException();
-    public Task<T> InvokeAsync<T>(object message, CancellationToken cancellation = default, TimeSpan? timeout = default) => throw new NotImplementedException();
+
+    public Task<T> InvokeAsync<T>(object message, CancellationToken cancellation = default, TimeSpan? timeout = default)
+    {
+        InvokeAsyncCallCount++;
+        LastInvokedMessage = message;
+        return Task.FromResult(default(T)!);
+    }
     public Task<T> InvokeAsync<T>(object message, DeliveryOptions options, CancellationToken cancellation = default, TimeSpan? timeout = default) => throw new NotImplementedException();
     public IAsyncEnumerable<TResponse> StreamAsync<TResponse>(object message, CancellationToken cancellation = default) => throw new NotImplementedException();
     public IAsyncEnumerable<TResponse> StreamAsync<TResponse>(object message, DeliveryOptions options, CancellationToken cancellation = default) => throw new NotImplementedException();

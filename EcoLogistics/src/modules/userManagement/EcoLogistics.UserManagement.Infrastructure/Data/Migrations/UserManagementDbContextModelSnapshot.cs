@@ -182,6 +182,20 @@ namespace EcoLogistics.UserManagement.Infrastructure.Data.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1b73f79d-059f-469f-a2d0-e220bd95a439",
+                            ConcurrencyStamp = "795db7e2-1bfd-4013-ad67-761058c988dd",
+                            Name = "Collector"
+                        },
+                        new
+                        {
+                            Id = "e221fd32-55c7-47b0-aa4c-121be12e256a",
+                            ConcurrencyStamp = "eb629136-7eee-4195-85d2-7f7f3ed62f4f",
+                            Name = "Generator"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -15,4 +15,8 @@
       <ProjectReference Include="..\EcoLogistics.UserManagement.Core\EcoLogistics.UserManagement.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="UnitTests\RegisterUserAccount\" />
+    </ItemGroup>
+
 </Project>

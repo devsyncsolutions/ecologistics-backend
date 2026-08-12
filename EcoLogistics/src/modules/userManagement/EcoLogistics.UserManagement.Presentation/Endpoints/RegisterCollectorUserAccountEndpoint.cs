@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Ecologistics.Common.Contracts.Commands;
+using EcoLogistics.UserManagement.Core.Enums;
 
 namespace EcoLogistics.UserManagement.Presentation.Endpoints;
 
@@ -43,7 +44,9 @@ public sealed class RegisterCollectorUserAccountEndpoint : ICarterModule
             request.LastName,
             request.OtherNames,
             request.Gender,
-            request.PhoneNumber);
+            request.PhoneNumber,
+            request.DistrictId,
+            AccountType.Collector);
         command.RequestId = requestId;
 
         var result = await bus.InvokeAsync<RegisterUserAccountResponse>(command, cancellationToken).ConfigureAwait(false);

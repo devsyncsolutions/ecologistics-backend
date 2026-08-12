@@ -41,22 +41,26 @@ public sealed class AuthenticationServices(
     public async Task<(string, string)> AuthenticateAsync(string phoneNumber, string otpCode,
         CancellationToken cancellationToken = default)
     {
-        var user = await userManager.FindByNameAsync(phoneNumber).ConfigureAwait(false);
-
-        if (user is null)
+        ApplicationUser? user =
+            await userManager.FindByNameAsync(phoneNumber).ConfigureAwait(false) ??
             throw new NotFoundException($"User with phone number {phoneNumber} not found.");
 
         // check if the OTP code has expired
         if (user.OtpCodeExpiresAt < DateTimeOffset.UtcNow.TimeOfDay)
             throw new BadHttpRequestException("OTP code has expired.");
 
-        var result = await signInManager.PasswordSignInAsync(user.UserName!, otpCode, false, lockoutOnFailure: false).ConfigureAwait(false);
+        SignInResult result = await signInManager.PasswordSignInAsync(user.UserName!, otpCode, false, lockoutOnFailure: false).ConfigureAwait(false);
 
         if (!result.Succeeded)
             throw new BadHttpRequestException("Invalid OTP code.");
 
         string accessToken = await GenerateAccessToken(user).ConfigureAwait(false);
         string refreshToken = GenerateRefreshToken();
+
+        if (user.PhoneNumberConfirmed) return (accessToken, refreshToken);
+
+        user.PhoneNumberConfirmed = true;
+        await userManager.UpdateAsync(user).ConfigureAwait(false);
 
         return (accessToken, refreshToken);
     }
@@ -103,7 +107,7 @@ public sealed class AuthenticationServices(
 
     public Task<(string, string)> RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    public async Task<string> RegisterAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<string> RegisterAsync(ApplicationUser user, AccountType accountType, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(user);
 
@@ -115,6 +119,8 @@ public sealed class AuthenticationServices(
 
         if (!result.Succeeded)
             throw new BadHttpRequestException("Failed to register user.", StatusCodes.Status400BadRequest);
+
+        await userManager.AddToRoleAsync(user, accountType.ToString()).ConfigureAwait(false);
 
         return user.Id;
     }

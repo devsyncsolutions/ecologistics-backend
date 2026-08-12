@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using EcoLogistics.UserManagement.Core.Enums;
+
 namespace EcoLogistics.UserManagement.Presentation.Endpoints;
 
 public sealed class RegisterUserAccountEndpoint : ICarterModule
@@ -41,7 +43,9 @@ public sealed class RegisterUserAccountEndpoint : ICarterModule
             request.LastName,
             request.OtherNames,
             request.Gender,
-            request.PhoneNumber);
+            request.PhoneNumber,
+            request.DistrictId,
+            AccountType.Generator);
         command.RequestId = requestId;
 
         var result = await bus.InvokeAsync<RegisterUserAccountResponse>(command, cancellationToken).ConfigureAwait(false);

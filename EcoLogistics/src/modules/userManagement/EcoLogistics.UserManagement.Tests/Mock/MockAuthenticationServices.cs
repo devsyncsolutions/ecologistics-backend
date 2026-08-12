@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using EcoLogistics.UserManagement.Core.Enums;
 using EcoLogistics.UserManagement.Core.Interfaces;
 using EcoLogistics.UserManagement.Core.Models;
 
@@ -36,7 +37,7 @@ internal sealed class MockAuthenticationServices : IAuthenticationServices
         throw new NotImplementedException();
     }
 
-    public Task<string> RegisterAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public Task<string> RegisterAsync(ApplicationUser user, AccountType accountType, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(user);
 

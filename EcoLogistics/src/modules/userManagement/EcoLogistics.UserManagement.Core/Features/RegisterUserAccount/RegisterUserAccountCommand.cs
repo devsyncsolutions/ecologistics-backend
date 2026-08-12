@@ -8,13 +8,16 @@ public record RegisterUserAccountCommand(
     string LastName,
     string? OtherNames,
     string Gender,
-    string PhoneNumber) : BaseRequest;
+    string PhoneNumber,
+    string DistrictId,
+    AccountType AccountType) : BaseRequest;
 
 public record RegisterUserAccountRequest(
     string FirstName,
     string LastName,
     string? OtherNames,
     string Gender,
-    string PhoneNumber);
+    string PhoneNumber,
+    string DistrictId);
 
 public record RegisterUserAccountResponse(string UserId);
