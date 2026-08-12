@@ -89,12 +89,6 @@ internal static class ServicesSetup
 
             if (builder.Environment.IsDevelopment()) return;
 
-            options.AddStackExchangeRedis(redis =>
-            {
-                redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
-                redis.InstanceName = "EcoLogisticsCache";
-            });
-
             options.AddOperationalStore(efOpt =>
             {
                 efOpt.UseTickerQDbContext<TickerQDbContext>(o =>
@@ -244,10 +238,6 @@ internal static class ServicesSetup
         {
             if (!builder.Environment.IsDevelopment())
             {
-                options.UseRabbitMq(builder.Configuration.GetConnectionString("RabbitMQConnection")!)
-                    .AutoProvision()
-                    .UseConventionalRouting();
-
                 options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
             }
 
