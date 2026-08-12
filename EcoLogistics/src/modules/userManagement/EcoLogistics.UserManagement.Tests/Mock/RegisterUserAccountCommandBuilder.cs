@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using EcoLogistics.UserManagement.Core.Enums;
 using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 
 namespace EcoLogistics.UserManagement.Tests.Mock;
@@ -17,6 +18,7 @@ internal sealed class RegisterUserAccountCommandBuilder
     private string _gender = "Male";
     private string _phoneNumber = "0501234567";
     private string _requestId = Guid.NewGuid().ToString();
+    private readonly string _districtId = "133e4567-e89b-12d3-a456-426655440000";
 
     public RegisterUserAccountCommandBuilder WithFirstName(string firstName)
     {
@@ -61,7 +63,9 @@ internal sealed class RegisterUserAccountCommandBuilder
             LastName: _lastName,
             OtherNames: _otherNames,
             Gender: _gender,
-            PhoneNumber: _phoneNumber)
+            PhoneNumber: _phoneNumber,
+            DistrictId: _districtId,
+            AccountType: AccountType.Generator)
         {
             RequestId = _requestId
         };

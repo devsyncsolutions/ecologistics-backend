@@ -4,7 +4,7 @@
 namespace EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 
 public class RegisterUserAccountCommandHandler(
-    IAuthenticationServices authenticationService, IFusionCache cache)
+    IAuthenticationServices authenticationService, IFusionCache cache, IMessageBus bus)
 {
     public async Task<RegisterUserAccountResponse> Handle(RegisterUserAccountCommand command,
         CancellationToken cancellationToken)
@@ -21,7 +21,7 @@ public class RegisterUserAccountCommandHandler(
 
         var requestResponse = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
-            async _ => await RegisterUserAccountAsync(authenticationService, command,  cancellationToken).ConfigureAwait(false),
+            async _ => await RegisterUserAccountAsync(authenticationService, command, bus, cache,  cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);
 
@@ -31,8 +31,21 @@ public class RegisterUserAccountCommandHandler(
     private static async Task<RegisterUserAccountResponse> RegisterUserAccountAsync(
         IAuthenticationServices authenticationService,
         RegisterUserAccountCommand command,
+        IMessageBus bus,
+        IFusionCache cache,
         CancellationToken cancellationToken)
     {
+        var existingDistrict = await bus
+            .InvokeAsync<GetDistrictResponse>(new GetDistrictQuery(command.DistrictId), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (existingDistrict is null)
+        {
+            await cache.RemoveAsync(CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
+                token: cancellationToken).ConfigureAwait(false);
+            throw new NotFoundException($"District with ID {command.DistrictId} not found.");
+        }
+
         var applicationUser = new ApplicationUser
         {
             UserName = command.PhoneNumber,
@@ -40,10 +53,11 @@ public class RegisterUserAccountCommandHandler(
             FirstName = command.FirstName,
             LastName = command.LastName,
             OtherNames = command.OtherNames,
+            DistrictId = Guid.Parse(command.DistrictId),
             Gender = Enum.Parse<Gender>(command.Gender)
         };
 
-        string registeredUserId = await authenticationService.RegisterAsync(applicationUser, cancellationToken).ConfigureAwait(false);
+        string registeredUserId = await authenticationService.RegisterAsync(applicationUser, command.AccountType, cancellationToken).ConfigureAwait(false);
 
         return new RegisterUserAccountResponse(registeredUserId);
     }

@@ -107,7 +107,7 @@ public sealed class AuthenticationServices(
 
     public Task<(string, string)> RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    public async Task<string> RegisterAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<string> RegisterAsync(ApplicationUser user, AccountType accountType, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(user);
 
@@ -119,6 +119,8 @@ public sealed class AuthenticationServices(
 
         if (!result.Succeeded)
             throw new BadHttpRequestException("Failed to register user.", StatusCodes.Status400BadRequest);
+
+        await userManager.AddToRoleAsync(user, accountType.ToString()).ConfigureAwait(false);
 
         return user.Id;
     }

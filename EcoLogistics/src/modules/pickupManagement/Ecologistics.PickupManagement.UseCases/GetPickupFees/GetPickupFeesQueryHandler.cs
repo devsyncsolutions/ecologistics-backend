@@ -12,9 +12,20 @@ public class GetPickupFeesQueryHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        string? rawDistrictId = loggedInUserService.GetDistrictId();
+
+        if (!Guid.TryParse(rawDistrictId, out var districtGuid))
+        {
+            throw new BadHttpRequestException(
+                "Your account has no district assigned. Please contact support.",
+                StatusCodes.Status400BadRequest);
+        }
+
+        var districtId = new DistrictId(districtGuid);
+
         IReadOnlyList<GetPickupFeesResponse> result = await cache.GetOrSetAsync(
             CacheKeys.GetPickupFeesKey(loggedInUserService.GetDistrictId()),
-            async _ => await FetchPickupFeesAsync(dbContext, loggedInUserService, cancellationToken).ConfigureAwait(false),
+            async _ => await FetchPickupFeesAsync(dbContext, districtId, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromDays(1),
@@ -26,12 +37,12 @@ public class GetPickupFeesQueryHandler(
     }
 
     private static async Task<IReadOnlyList<GetPickupFeesResponse>> FetchPickupFeesAsync(IPickupManagementDbContext dbContext,
-        ILoggedInUserService loggedInUserService,
+        DistrictId districtId,
         CancellationToken cancellationToken)
     {
         var query = await dbContext
             .PickupFees
-            .Where(pf => pf.DistrictId == new DistrictId(Guid.Parse(loggedInUserService.GetDistrictId())))
+            .Where(pf => pf.DistrictId == districtId)
             .Select(pf => new
             {
                 pf.Id,
