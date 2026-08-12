@@ -49,6 +49,16 @@ internal sealed class CreateAPickupJobCommandValidator : AbstractValidator<Creat
             .WithMessage("Contact phone cannot exceed 15 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.ContactPhone));
 
+        RuleFor(x => x.ContactPhone)
+            .NotEmpty()
+            .WithMessage("Contact phone is required when an alternative Contact Name is provided")
+            .When(x => !string.IsNullOrWhiteSpace(x.ContactName));
+
+        RuleFor(x => x.ContactName)
+            .NotEmpty()
+            .WithMessage("Contact Name is required when an alternative Contact phone is provided")
+            .When(x => !string.IsNullOrWhiteSpace(x.ContactPhone));
+
         RuleFor(x => x.ExtraNotes)
             .MaximumLength(500)
             .WithMessage("Extra notes cannot exceed 500 characters.")

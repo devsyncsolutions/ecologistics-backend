@@ -57,17 +57,20 @@ public class CreateAPickupJobCommandHandler(
         }
 
         PickupFeeId pickupFeeId = new(Guid.Parse(command.PickupFeeId));
+        DistrictId districtId = new DistrictId(Guid.Parse(loggedInUserService.GetDistrictId()));
 
         bool  pickupFeeExists = await dbContext.PickupFees
-            .AnyAsync(pf => pf.Id == pickupFeeId, cancellationToken)
+            .AnyAsync(pf => pf.Id == pickupFeeId && pf.DistrictId == districtId, cancellationToken)
             .ConfigureAwait(false);
         if (!pickupFeeExists)
             throw new NotFoundException("Specified Pickup fee not found.");
 
+        var type = Enum.Parse<PickupType>(command.Type);
+
         string reference = await GenerateReference(dbContext, command.FormattedAddress, cancellationToken).ConfigureAwait(false);
         var newPickup = Pickup.Create(
             pickupFeeId,
-            Enum.Parse<PickupType>(command.Type),
+            type,
             command.Coordinates.Latitude,
             command.Coordinates.Longitude,
             command.FormattedAddress,
