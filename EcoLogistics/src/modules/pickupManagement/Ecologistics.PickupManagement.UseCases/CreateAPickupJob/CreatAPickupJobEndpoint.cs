@@ -19,7 +19,7 @@ public sealed class CreatAPickupJobEndpoint : ICarterModule
     }
 
     private static async Task<IResult> Handle(
-        [FromHeader] string requestId,
+        [FromHeader(Name = "X-Request-ID")] string requestId,
         [FromBody] CreateAPickupJobCommand command,
         [FromServices] IMessageBus bus,
         CancellationToken cancellationToken)
