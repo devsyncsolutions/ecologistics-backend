@@ -12,12 +12,13 @@ public record RecurringProperties
     public RecurringProperties(
         int daysIntervalForPickupIfRecurring,
         DateTimeOffset scheduledForPickupAt,
-        PickupId  parentPickupId)
+        PickupId  parentPickupId,
+        bool isActive)
     {
         DaysIntervalForPickupIfRecurring = daysIntervalForPickupIfRecurring;
         NextScheduledDate = scheduledForPickupAt.AddDays(daysIntervalForPickupIfRecurring);
         ParentPickupId = parentPickupId;
-        IsActive = true;
+        IsActive = isActive;
     }
 
     public int DaysIntervalForPickupIfRecurring { get; set; }

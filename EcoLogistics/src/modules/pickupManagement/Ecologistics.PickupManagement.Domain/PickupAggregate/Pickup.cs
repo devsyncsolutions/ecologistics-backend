@@ -52,10 +52,9 @@ public class Pickup : BaseAggregate<PickupId>
             Priority = priority ?? Priority.High
         };
 
-        if (type == PickupType.Recurring)
-        {
-            newPickup.RecurringProperties = new RecurringProperties(daysIntervalForPickupIfRecurring, scheduledForPickupAt, newPickup.Id);
-        }
+        newPickup.RecurringProperties = type == PickupType.Recurring ?
+            new RecurringProperties(daysIntervalForPickupIfRecurring, scheduledForPickupAt, newPickup.Id, true) :
+            new RecurringProperties(1, scheduledForPickupAt, newPickup.Id, false);
 
         newPickup.AddDomainEvent(new PickupCreatedEvent(newPickup.Id));
 

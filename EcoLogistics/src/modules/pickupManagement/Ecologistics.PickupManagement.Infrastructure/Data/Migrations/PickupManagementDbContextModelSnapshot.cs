@@ -1379,7 +1379,9 @@ namespace Ecologistics.PickupManagement.Infrastructure.Data.Migrations
                     b.ComplexProperty(typeof(Dictionary<string, object>), "RecurringProperties", "Ecologistics.PickupManagement.Domain.PickupAggregate.Pickup.RecurringProperties#RecurringProperties", b1 =>
                         {
                             b1.Property<int>("DaysIntervalForPickupIfRecurring")
-                                .HasColumnType("integer");
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(1);
 
                             b1.Property<bool>("IsActive")
                                 .HasColumnType("boolean");
