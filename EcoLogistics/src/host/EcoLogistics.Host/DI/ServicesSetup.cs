@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CloudinaryDotNet;
 using Ecologistics.Common.Interfaces;
 using EcoLogistics.Host.Middlewares;
@@ -88,6 +90,12 @@ internal static class ServicesSetup
             });
 
             if (builder.Environment.IsDevelopment()) return;
+
+            options.AddStackExchangeRedis(redis =>
+            {
+                redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
+                redis.InstanceName = "EcoLogisticsCache";
+            });
 
             options.AddOperationalStore(efOpt =>
             {
@@ -236,10 +244,11 @@ internal static class ServicesSetup
     {
         builder.Host.UseWolverine(options =>
         {
-            if (!builder.Environment.IsDevelopment())
-            {
-                options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
-            }
+            options.UseRabbitMq(builder.Configuration.GetConnectionString("RabbitMQConnection")!)
+                .AutoProvision()
+                .UseConventionalRouting();
+
+            options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
             options.CodeGeneration.AlwaysUseServiceLocationFor<IAuthenticationServices>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();
@@ -261,9 +270,6 @@ internal static class ServicesSetup
                 FailSafeMaxDuration = TimeSpan.FromMinutes(30)
             });
 
-        if (builder.Environment.IsDevelopment())
-            return;
-
         string redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection")
             ?? throw new InvalidOperationException("RedisConnection not found in configuration");
 
@@ -280,6 +286,13 @@ internal static class ServicesSetup
             {
                 Configuration = redisConnectionString
             }));
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+        };
+
+        fusion.WithSerializer(new FusionCacheSystemTextJsonSerializer(jsonOptions));
     }
     private static void ConfigureCors(WebApplicationBuilder builder)
     {

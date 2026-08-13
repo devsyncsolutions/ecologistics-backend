@@ -89,7 +89,11 @@ internal sealed class PickupConfigurations : IEntityTypeConfiguration<Pickup>
                 .HasMaxLength(500);
         });
 
-        builder.ComplexProperty(x => x.RecurringProperties);
+        builder.ComplexProperty(x => x.RecurringProperties, recurring =>
+        {
+            recurring.Property(x => x.DaysIntervalForPickupIfRecurring)
+                .HasDefaultValue(1);
+        });
 
         builder.Property(x => x.Reference)
             .HasMaxLength(7)

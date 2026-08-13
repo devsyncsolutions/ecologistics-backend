@@ -4,14 +4,41 @@
 namespace Ecologistics.PickupManagement.UseCases.CreateAPickupJob;
 
 public class CreatPickupForQueryEntryCommandHandler(
-    IPickupManagementDbContext dbContext)
+    IPickupManagementDbContext dbContext,
+    ILogger<CreatPickupForQueryEntryCommandHandler> logger)
 {
     public async Task<PickupForQueryCreated> Handle(CreatPickupForQueryEntryCommand command, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
-        ArgumentNullException.ThrowIfNull(command.Pickup);
+        ArgumentNullException.ThrowIfNull(command);
 
-        var pickup = command.Pickup;
+        var pickup = await dbContext
+            .Pickups
+            .Select(p => new
+            {
+                p.Id,
+                p.Reference,
+                p.ContactName,
+                p.FormattedAddress,
+                p.Type,
+                p.Priority,
+                p.PickupFeeId,
+                p.Coordinates,
+                p.CreatedBy
+            })
+            .Where(p => p.Id == new PickupId(command.PickupId))
+            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+        if (pickup is null)
+        {
+            logger.LogErrorMessage(
+                $"Pickup with Id {command.PickupId} not found when starting PickupCreatedEvent saga.",
+                null,
+                null,
+                null);
+
+            throw new NotFoundException("Pickup not found.");
+        }
 
         var fee = await dbContext
             .PickupFees

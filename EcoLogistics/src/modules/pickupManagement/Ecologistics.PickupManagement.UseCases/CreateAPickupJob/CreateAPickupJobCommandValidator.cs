@@ -88,9 +88,9 @@ internal sealed class CreateAPickupJobCommandValidator : AbstractValidator<Creat
             .WithMessage("Longitude must be between -180 and 180 degrees.");
 
         RuleFor(x => x.DaysIntervalForPickupIfRecurring)
-            .GreaterThan(1)
-            .When(x => x.Type.Equals("Recurring", StringComparison.OrdinalIgnoreCase))
-            .WithMessage("Recurring interval must be greater than or equal to 1.");
+            .ExclusiveBetween(1, 30)
+            .When(x => x.Type == nameof(PickupType.Recurring))
+            .WithMessage("A recurring pickup must specify a positive day interval from 1 to 30.");
     }
 
     private static bool BeAValidDateAndTime(string? arg)
