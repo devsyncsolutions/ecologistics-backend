@@ -9,5 +9,7 @@ public enum PickupStatus
     Completed,
     Cancelled,
     Started,
-    InProgress
+    InProgress,
+    Matched,
+    CollectorEnRoute
 }

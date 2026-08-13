@@ -91,6 +91,10 @@ internal sealed class CreateAPickupJobCommandValidator : AbstractValidator<Creat
             .ExclusiveBetween(1, 30)
             .When(x => x.Type == nameof(PickupType.Recurring))
             .WithMessage("A recurring pickup must specify a positive day interval from 1 to 30.");
+
+        RuleFor(x => x.NumberOfContainers)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("Number of containers must be greater than or equal to 1.");
     }
 
     private static bool BeAValidDateAndTime(string? arg)

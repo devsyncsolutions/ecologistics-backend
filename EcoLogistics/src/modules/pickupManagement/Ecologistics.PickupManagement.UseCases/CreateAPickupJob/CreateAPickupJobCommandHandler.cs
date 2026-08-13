@@ -6,7 +6,6 @@ namespace Ecologistics.PickupManagement.UseCases.CreateAPickupJob;
 public class CreateAPickupJobCommandHandler(
     IPickupManagementDbContext dbContext,
     IFusionCache cache,
-    IMessageBus bus,
     ILoggedInUserService loggedInUserService)
 {
     public async Task<CreateAPickupJobResponse> Handle(CreateAPickupJobCommand command,
@@ -21,7 +20,7 @@ public class CreateAPickupJobCommandHandler(
 
         Guid newPickupId = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<CreateAPickupJobCommand>(command.RequestId),
-            async _ => await CreateNewPickupAsync(dbContext, bus, loggedInUserService, command, cancellationToken).ConfigureAwait(false),
+            async _ => await CreateNewPickupAsync(dbContext, loggedInUserService, command, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromMinutes(30),
@@ -35,18 +34,18 @@ public class CreateAPickupJobCommandHandler(
 
     private static async Task<Guid> CreateNewPickupAsync(
         IPickupManagementDbContext dbContext,
-        IMessageBus bus,
         ILoggedInUserService loggedInUserService,
         CreateAPickupJobCommand command,
         CancellationToken cancellationToken)
     {
-        // check if user is verified
-        bool isUserVerified = await bus
-            .InvokeAsync<bool>(new CheckIfUserIsVerifiedQuery(loggedInUserService.GetUserId()), cancellationToken)
-            .ConfigureAwait(false);
+        // Restrict the number of uncompleted jobs to be created in code
+        // move to settings table later
+        int numberOfActiveJobs = await dbContext.Pickups
+            .Where(p => p.CreatedBy == loggedInUserService.GetUserId() && p.PickupStatus != PickupStatus.Completed)
+            .CountAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!isUserVerified)
-            throw new ForbiddenRequestException("User is not verified.");
+        if (numberOfActiveJobs == 3)
+            throw new ForbiddenRequestException("You've reached the maximum number of active jobs.");
 
         PickupFeeId pickupFeeId = new(Guid.Parse(command.PickupFeeId));
         DistrictId districtId = new(Guid.Parse(loggedInUserService.GetDistrictId()));
@@ -76,7 +75,8 @@ public class CreateAPickupJobCommandHandler(
             command.WasteContentName,
             Enum.Parse<Priority>(command.Priority),
             reference,
-            command.DaysIntervalForPickupIfRecurring);
+            command.DaysIntervalForPickupIfRecurring,
+            command.NumberOfContainers);
 
         await dbContext.Pickups.AddAsync(newPickup, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

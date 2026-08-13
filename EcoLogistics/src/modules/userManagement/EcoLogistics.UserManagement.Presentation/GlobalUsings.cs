@@ -4,7 +4,10 @@
 global using System.Text;
 global using Carter;
 global using Ecologistics.Common.Contracts;
+global using Ecologistics.Common.Contracts.Commands;
+global using Ecologistics.Common.Enums;
 global using Ecologistics.Common.Interfaces;
+global using EcoLogistics.UserManagement.Core.Enums;
 global using EcoLogistics.UserManagement.Core.Features.GetUserDetails;
 global using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 global using EcoLogistics.UserManagement.Core.Features.UpdateUserDetails;

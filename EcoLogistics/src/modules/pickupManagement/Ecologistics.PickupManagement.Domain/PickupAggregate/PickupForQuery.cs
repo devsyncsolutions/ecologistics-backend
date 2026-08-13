@@ -14,6 +14,7 @@ public class PickupForQuery
     public decimal Amount { get; set; }
     public decimal Commission { get; set; }
     public string AverageWeight { get; set; } = string.Empty;
+    public int NumberOfContainers { get; set; } = 1;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
     public Point Coordinates { get; set; } = default!;
 }

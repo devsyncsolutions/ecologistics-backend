@@ -108,5 +108,9 @@ internal sealed class PickupConfigurations : IEntityTypeConfiguration<Pickup>
             .IsRequired()
             .HasDefaultValue(Priority.High)
             .HasConversion(x => x.ToString(), type => Enum.Parse<Priority>(type));
+
+        builder.Property(x => x.NumberOfContainers)
+            .IsRequired()
+            .HasDefaultValue(1);
     }
 }

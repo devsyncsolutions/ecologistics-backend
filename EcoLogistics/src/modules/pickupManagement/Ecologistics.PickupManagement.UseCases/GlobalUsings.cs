@@ -3,8 +3,10 @@
 
 global using System.Globalization;
 global using Carter;
+global using Ecologistics.Common.Abstractions;
 global using Ecologistics.Common.Contracts.Queries;
 global using Ecologistics.Common.Contracts.Responses;
+global using Ecologistics.Common.Enums;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.Common.Interfaces;
 global using Ecologistics.Common.Utilities;

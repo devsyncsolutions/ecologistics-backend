@@ -21,4 +21,5 @@ public record PickupJobDto(
     decimal Amount,
     decimal Commission,
     string AverageWeight,
-    string CreatedAt);
+    string CreatedAt,
+    int NumberOfContainers);

@@ -45,5 +45,9 @@ internal sealed class PickupForQueryConfigurations : IEntityTypeConfiguration<Pi
             .IsRequired()
             .HasColumnType("geography (point)")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Property(x => x.NumberOfContainers)
+            .IsRequired()
+            .HasDefaultValue(1);
     }
 }

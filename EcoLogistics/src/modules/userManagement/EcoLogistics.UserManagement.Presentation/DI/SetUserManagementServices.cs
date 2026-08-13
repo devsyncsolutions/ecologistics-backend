@@ -87,7 +87,9 @@ public static class SetUserManagementServices
 
     private static void ConfigureAuthorizationPolicies(IServiceCollection services)
     {
-        // add authorization policies
+        services.AddAuthorizationBuilder()
+            .AddPolicy(nameof(AccountType.Generator), policy => policy.RequireRole(nameof(AccountType.Generator)))
+            .AddPolicy(nameof(AccountType.Collector), policy => policy.RequireRole(nameof(AccountType.Collector)));
     }
 
     private static void ConfigureUtilities(IServiceCollection services, IConfiguration configuration)

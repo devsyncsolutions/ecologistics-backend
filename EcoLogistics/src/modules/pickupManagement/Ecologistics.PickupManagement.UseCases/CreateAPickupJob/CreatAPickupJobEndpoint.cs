@@ -15,7 +15,8 @@ public sealed class CreatAPickupJobEndpoint : ICarterModule
             .Produces<CreateAPickupJobResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization(nameof(AccountType.Generator));
     }
 
     private static async Task<IResult> Handle(
@@ -34,10 +35,11 @@ public sealed class CreatAPickupJobEndpoint : ICarterModule
 
         command.RequestId = requestId;
 
-        var result = await bus.InvokeAsync<CreateAPickupJobResponse>(command, cancellationToken).ConfigureAwait(false);
+        CreateAPickupJobResponse result = await bus.InvokeAsync<CreateAPickupJobResponse>(command, cancellationToken).ConfigureAwait(false);
 
-        return Results.Created(
-            "/pickup-management/pickup-jobs/" + result.PickupId,
+        return Results.CreatedAtRoute(
+            "GetPickupJobDetails",
+            new { pickupId = result.PickupId },
             result);
     }
 }

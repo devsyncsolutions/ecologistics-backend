@@ -62,7 +62,8 @@ public class GetPickupJobsQueryHandler(
                 Amount: p.Amount,
                 Commission: p.Commission,
                 AverageWeight: p.AverageWeight,
-                CreatedAt: p.CreatedAt.ToString(CultureInfo.InvariantCulture)));
+                CreatedAt: p.CreatedAt.ToString(CultureInfo.InvariantCulture),
+                NumberOfContainers: p.NumberOfContainers));
 
         int totalCount = await list.CountAsync(cancellationToken).ConfigureAwait(false);
 

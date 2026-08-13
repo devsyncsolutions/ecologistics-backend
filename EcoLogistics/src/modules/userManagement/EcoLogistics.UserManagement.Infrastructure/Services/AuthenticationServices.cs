@@ -3,6 +3,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Ecologistics.Common.Enums;
 using Ecologistics.Common.Exceptions;
 using EcoLogistics.UserManagement.Core.Utils;
 using Microsoft.AspNetCore.Identity;

@@ -15,6 +15,7 @@ public class Pickup : BaseAggregate<PickupId>
     public string? ExtraNotes { get; private set; }
     public TimeStamp TimeStamp { get; private set; } = default!;
     public PickupFeeId PickupFeeId { get; private set; }
+    public int NumberOfContainers { get; private set; } = 1;
     public PickupStatus PickupStatus { get; private set; }
     public string? CollectorMemberId { get; private set; }
     public Uri? DownloadableInvoiceUrl { get; private set; }
@@ -28,7 +29,7 @@ public class Pickup : BaseAggregate<PickupId>
         PickupFeeId pickupFeeId, PickupType type, double latitude, double longitude, string formattedAddress,
         string ghanaPostGpsAddress, string? landmark, string? contactName, string? contactPhone,
         string? extraNotes, DateTimeOffset scheduledForPickupAt, string wasteContentName, Priority? priority,
-        string reference, int daysIntervalForPickupIfRecurring)
+        string reference, int daysIntervalForPickupIfRecurring, int numberOfContainers)
     {
         var point = CreatePointCalculation.CreatePoint(longitude, latitude);
         var timeStamp = new TimeStamp(scheduledForPickupAt);
@@ -49,7 +50,8 @@ public class Pickup : BaseAggregate<PickupId>
             PickupStatus = PickupStatus.Scheduled,
             Reference = reference,
             WasteContentName = wasteContentName,
-            Priority = priority ?? Priority.High
+            Priority = priority ?? Priority.High,
+            NumberOfContainers = numberOfContainers
         };
 
         newPickup.RecurringProperties = type == PickupType.Recurring ?

@@ -13,7 +13,8 @@ public sealed class GetPickupJobsEndpoint : ICarterModule
             .WithTags("Pickup Management")
             .Produces<PagedResponse<PickupJobDto>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization(nameof(AccountType.Collector));
     }
 
     private static async Task<IResult> Handle(

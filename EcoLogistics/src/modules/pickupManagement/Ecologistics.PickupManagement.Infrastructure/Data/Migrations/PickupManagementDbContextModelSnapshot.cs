@@ -1321,6 +1321,11 @@ namespace Ecologistics.PickupManagement.Infrastructure.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<int>("NumberOfContainers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("PickupFeeId")
                         .HasColumnType("uuid");
 
@@ -1467,6 +1472,11 @@ namespace Ecologistics.PickupManagement.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<int>("NumberOfContainers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("Priority")
                         .IsRequired()

@@ -24,7 +24,8 @@ public class CreatPickupForQueryEntryCommandHandler(
                 p.Priority,
                 p.PickupFeeId,
                 p.Coordinates,
-                p.CreatedBy
+                p.CreatedBy,
+                p.NumberOfContainers
             })
             .Where(p => p.Id == new PickupId(command.PickupId))
             .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -66,7 +67,8 @@ public class CreatPickupForQueryEntryCommandHandler(
             Amount = fee!.Amount,
             Commission = fee.Commission,
             AverageWeight = $"{fee.AvarageWeight} {fee.UnitOfMeasurement}",
-            Coordinates = pickup.Coordinates
+            Coordinates = pickup.Coordinates,
+            NumberOfContainers = pickup.NumberOfContainers
         };
 
         await dbContext.PickupsForQuerying.AddAsync(pickupForQuery, cancellationToken).ConfigureAwait(false);
