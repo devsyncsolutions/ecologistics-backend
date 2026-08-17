@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using CloudinaryDotNet;
 using Ecologistics.Common.Interfaces;
 using EcoLogistics.Host.Middlewares;
+using Ecologistics.NotificationsManagment.UseCases.DI;
 using Ecologistics.PickupManagement.Infrastructure.Data;
 using Ecologistics.PickupManagement.Infrastructure.Services;
 using Ecologistics.PickupManagement.UseCases.DI;
@@ -35,6 +36,7 @@ internal static class ServicesSetup
         builder.Services.AddUserManagementServices(builder.Configuration);
         builder.Services.AddTenantManagementServices(builder.Configuration);
         builder.Services.AddPickupManagementServices(builder.Configuration);
+        builder.Services.AddNotificationsManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);

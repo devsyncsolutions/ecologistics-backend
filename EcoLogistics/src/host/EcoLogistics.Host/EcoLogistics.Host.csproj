@@ -27,6 +27,7 @@
         <PackageReference Include="TickerQ.EntityFrameworkCore" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\modules\notificationsManagement\Ecologistics.NotificationsManagment.UseCases\Ecologistics.NotificationsManagment.UseCases.csproj" />
       <ProjectReference Include="..\..\modules\pickupManagement\Ecologistics.PickupManagement.UseCases\Ecologistics.PickupManagement.UseCases.csproj" />
       <ProjectReference Include="..\..\modules\tenantManagement\Ecologistics.TenantManagement.Presentation\Ecologistics.TenantManagement.Presentation.csproj" />
       <ProjectReference Include="..\..\modules\userManagement\EcoLogistics.UserManagement.Presentation\EcoLogistics.UserManagement.Presentation.csproj" />
