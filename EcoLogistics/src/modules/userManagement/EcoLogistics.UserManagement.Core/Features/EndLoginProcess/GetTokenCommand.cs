@@ -3,6 +3,10 @@
 
 namespace EcoLogistics.UserManagement.Core.Features.EndLoginProcess;
 
-public record GetTokenCommand(string PhoneNumber, string OtpCode) : BaseRequest;
+public record GetTokenCommand(
+    string PhoneNumber, 
+    string OtpCode,
+    string? DeviceTokenForNotificationBroadcasting,
+    string? Platform) : BaseRequest;
 
 public record GetTokenResponse(string AccessToken, string RefreshToken);
