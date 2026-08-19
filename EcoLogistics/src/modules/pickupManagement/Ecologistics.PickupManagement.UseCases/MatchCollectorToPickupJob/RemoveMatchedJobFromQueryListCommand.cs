@@ -1,0 +1,3 @@
+namespace Ecologistics.PickupManagement.UseCases.MatchCollectorToPickupJob;
+
+public record RemoveMatchedJobFromQueryListCommand(PickupId PickupId, Guid SagaId);

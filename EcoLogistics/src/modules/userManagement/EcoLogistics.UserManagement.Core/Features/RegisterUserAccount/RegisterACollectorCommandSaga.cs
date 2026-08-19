@@ -31,8 +31,7 @@ public class RegisterACollectorCommandSaga : Saga
     public static async Task<(
         RegisterACollectorCommandSaga,
         RegisterUserAccountCommand)> Start(
-        RegisterACollectorCommand @event,
-        ILogger<RegisterACollectorCommandSaga> logger)
+        RegisterACollectorCommand @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
