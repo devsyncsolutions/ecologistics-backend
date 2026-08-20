@@ -1,8 +1,5 @@
-using Ecolgistics.NotificationsManagment.Infrastructure.Services;
 using Ecologistics.Common.Contracts.Commands;
-using Ecologistics.Common.Exceptions;
 using FirebaseAdmin.Messaging;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Ecologistics.NotificationsManagment.UseCases.CreateANotification;

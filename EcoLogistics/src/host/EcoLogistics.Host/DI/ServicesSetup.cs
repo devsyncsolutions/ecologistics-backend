@@ -26,6 +26,7 @@ using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
+using Wolverine.EntityFrameworkCore;
 
 namespace EcoLogistics.Host.DI;
 
@@ -251,6 +252,13 @@ internal static class ServicesSetup
                 .UseConventionalRouting();
 
             options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+            // Enable EF Core transaction integration
+            options.UseEntityFrameworkCoreTransactions();
+
+            // Turn on the transactional outbox and inbox patterns globally
+            options.Policies.UseDurableOutboxOnAllSendingEndpoints();
+            options.Policies.UseDurableInboxOnAllListeners();
 
             options.CodeGeneration.AlwaysUseServiceLocationFor<IAuthenticationServices>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();

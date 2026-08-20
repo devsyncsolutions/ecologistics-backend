@@ -17,7 +17,7 @@ public sealed class RegisterUserAccountCommandValidator : AbstractValidator<Regi
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required.")
-            .MaximumLength(15).WithMessage("Phone number cannot exceed 15 characters.");
+            .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.");
 
         RuleFor(x => x.OtherNames)
             .MaximumLength(50).WithMessage("Other names cannot exceed 50 characters.")

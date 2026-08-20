@@ -25,4 +25,8 @@ public static class CacheKeys
     }
 
     public static string GetPickupFeesKey(string districtId) => $"PickupFees:{districtId}";
+
+    public static string GetNotificationsKey(string userId, bool? queryUnseenOnly) => $"Notifications:{userId}:{queryUnseenOnly}";
+
+    public static Task ToTask(ValueTask valueTask) => valueTask.AsTask();
 }

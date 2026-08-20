@@ -25,6 +25,7 @@
         <PackageReference Include="TickerQ.Caching.StackExchangeRedis" />
         <PackageReference Include="TickerQ.Dashboard" />
         <PackageReference Include="TickerQ.EntityFrameworkCore" />
+        <PackageReference Include="WolverineFx.EntityFrameworkCore" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\modules\notificationsManagement\Ecologistics.NotificationsManagment.UseCases\Ecologistics.NotificationsManagment.UseCases.csproj" />

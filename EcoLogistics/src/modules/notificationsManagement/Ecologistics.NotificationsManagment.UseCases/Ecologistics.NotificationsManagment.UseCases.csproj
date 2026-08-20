@@ -10,4 +10,10 @@
       <ProjectReference Include="..\Ecolgistics.NotificationsManagment.Infrastructure\Ecolgistics.NotificationsManagment.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Carter" />
+      <PackageReference Include="WolverineFx" />
+      <PackageReference Include="ZiggyCreatures.FusionCache" />
+    </ItemGroup>
+
 </Project>

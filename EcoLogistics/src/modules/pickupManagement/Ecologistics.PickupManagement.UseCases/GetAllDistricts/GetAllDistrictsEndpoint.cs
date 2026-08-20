@@ -13,7 +13,8 @@ public sealed class GetAllDistrictsEndpoint : ICarterModule
             .WithTags("Pickup Management")
             .Produces<PagedResponse<GetAllDistrictDto>>()
             .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .AllowAnonymous();
     }
 
     private static async Task<IResult> Handle(
