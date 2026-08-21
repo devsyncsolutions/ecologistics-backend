@@ -5,8 +5,10 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CloudinaryDotNet;
+using Ecolgistics.NotificationsManagment.Infrastructure.Services;
 using EcoLogistics.Host.Middlewares;
 using Ecologistics.NotificationsManagment.UseCases.DI;
+using Ecologistics.NotificationsManagment.UseCases.GetNotifications;
 using Ecologistics.PickupManagement.Infrastructure.Data;
 using Ecologistics.PickupManagement.Infrastructure.Services;
 using Ecologistics.PickupManagement.UseCases.DI;
@@ -57,7 +59,7 @@ internal static class ServicesSetup
         builder.Services.AddProblemDetails();
         builder.Services.AddHttpContextAccessor();
 
-        builder.Host.UseDefaultServiceProvider((context, options) =>
+        builder.Host.UseDefaultServiceProvider((_, options) =>
         {
             options.ValidateScopes = true;
             options.ValidateOnBuild = true;
@@ -264,9 +266,11 @@ internal static class ServicesSetup
             options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IPickupManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<INotificationsManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(CreateATenantCompanyCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetPickupJobsQueryHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(GetNotificationsQueryHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

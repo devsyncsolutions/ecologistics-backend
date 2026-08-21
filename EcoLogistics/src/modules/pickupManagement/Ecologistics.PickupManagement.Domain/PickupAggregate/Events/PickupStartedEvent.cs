@@ -3,4 +3,4 @@
 
 namespace Ecologistics.PickupManagement.Domain.PickupAggregate.Events;
 
-public record PickupStartedEvent(PickupId Id, string Reference) : IDomainEvents;
+public record PickupStartedEvent(string Reference, string UserId, string CollectorId) : IDomainEvents;

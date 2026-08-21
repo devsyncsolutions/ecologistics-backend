@@ -4,7 +4,7 @@ public sealed class MatchCollectorToPickupJobCommandEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/pickup-management/pickup-jobs/{pickupJobId:guid}/accept", Handle)
+        app.MapPut("/pickup-management/pickup-jobs/{pickupJobId:guid}/accept", Handle)
             .WithName("AcceptAPickupJob")
             .WithDescription("Accept a new pickup job.")
             .WithTags("Pickup Management")

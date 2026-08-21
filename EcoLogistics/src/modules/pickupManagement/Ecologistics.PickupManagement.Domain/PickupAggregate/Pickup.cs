@@ -110,7 +110,7 @@ public class Pickup : BaseAggregate<PickupId>
         var timeStamp = new TimeStamp(TimeStamp.ScheduledForPickupAt, DateTimeOffset.UtcNow);
         TimeStamp = timeStamp;
 
-        AddDomainEvent(new PickupStartedEvent(Id, Reference));
+        AddDomainEvent(new PickupStartedEvent(Reference, CreatedBy!, CollectorMemberId!));
     }
 
     public void MoveToProgress()
@@ -127,8 +127,14 @@ public class Pickup : BaseAggregate<PickupId>
         AddDomainEvent(new PickupMovedToProgressEvent(Id));
     }
 
-    public void Complete()
+    public void Complete(string collectorMemberId)
     {
+        if (string.IsNullOrWhiteSpace(collectorMemberId))
+            throw new BadRequestException("Collector member id cannot be null or empty.");
+
+        if (CollectorMemberId != collectorMemberId)
+            throw new ForbiddenRequestException("This pickup cannot be completed by the user");
+
         switch (PickupStatus)
         {
             case PickupStatus.Completed:
@@ -149,6 +155,9 @@ public class Pickup : BaseAggregate<PickupId>
 
     public void Cancel(string reason, string cancelledBy)
     {
+        if (CollectorMemberId != cancelledBy || CreatedBy != cancelledBy)
+            throw new ForbiddenRequestException("This pickup cannot be cancelled by the user");
+
         switch (PickupStatus)
         {
             case PickupStatus.Cancelled:
@@ -170,8 +179,9 @@ public class Pickup : BaseAggregate<PickupId>
         return invoiceUrl;
     }
 
-    public void UpdatePickup(string? contactName, string? contactPhone, string? extraNotes,
-        DateTimeOffset? scheduledForPickupAt, Priority? priority, string wasteContentName)
+    public void UpdatePickup(
+        string? contactName, string? contactPhone, string? extraNotes,
+        DateTimeOffset? scheduledForPickupAt, Priority? priority, string? wasteContentName)
     {
         if(scheduledForPickupAt is not null && PickupStatus != PickupStatus.Scheduled)
             throw new ForbiddenRequestException("You cannot update the scheduled pickup time after the pickup has started.");
@@ -183,7 +193,7 @@ public class Pickup : BaseAggregate<PickupId>
         ContactPhone = contactPhone;
         ExtraNotes = extraNotes;
         Priority = priority ?? Priority;
-        WasteContentName = wasteContentName;
+        WasteContentName = wasteContentName ?? WasteContentName;
         TimeStamp = scheduledForPickupAt is null ? TimeStamp : new TimeStamp(scheduledForPickupAt.Value);
 
         AddDomainEvent(new PickupUpdatedEvent(Id));
