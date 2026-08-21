@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CloudinaryDotNet;
-using Ecologistics.Common.Interfaces;
 using EcoLogistics.Host.Middlewares;
 using Ecologistics.NotificationsManagment.UseCases.DI;
 using Ecologistics.PickupManagement.Infrastructure.Data;

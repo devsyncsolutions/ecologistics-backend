@@ -81,7 +81,7 @@ public class Pickup : BaseAggregate<PickupId>
         PickupStatus = PickupStatus.Matched;
         CollectorMemberId = collectorMemberId;
 
-        AddDomainEvent(new PickupMatchedEvent(Id));
+        AddDomainEvent(new PickupMatchedEvent(Id, Reference, collectorMemberId, CreatedBy!));
     }
 
     public void Start(string collectorMemberId)
@@ -110,7 +110,7 @@ public class Pickup : BaseAggregate<PickupId>
         var timeStamp = new TimeStamp(TimeStamp.ScheduledForPickupAt, DateTimeOffset.UtcNow);
         TimeStamp = timeStamp;
 
-        AddDomainEvent(new PickupStartedEvent(Id));
+        AddDomainEvent(new PickupStartedEvent(Id, Reference));
     }
 
     public void MoveToProgress()

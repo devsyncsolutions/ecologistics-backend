@@ -1,25 +1,37 @@
 namespace Ecologistics.PickupManagement.UseCases.MatchCollectorToPickupJob;
 
 public record RemoveMatchedJobFromQueryListCompletedCommand(
-    [property: SagaIdentity] Guid SagaId, 
-    PickupId PickupId);
+    [property: SagaIdentity] Guid SagaId,
+    PickupId PickupId,
+    string PickupReference,
+    string TriggeredBy,
+    string UserId);
 
 public record SendNotificationsForMatchedJobCommand(
-    [property: SagaIdentity] Guid SagaId, 
-    PickupId Id);
+    [property: SagaIdentity] Guid SagaId,
+    PickupId Id,
+    string PickupReference,
+    string TriggeredBy,
+    string UserId);
 
 public record SendNotificationsForMatchedJobCompletedCommand(
-    [property: SagaIdentity] Guid SagaId, 
-    PickupId PickupId
+    [property: SagaIdentity] Guid SagaId,
+    PickupId PickupId,
+    string PickupReference,
+    string TriggeredBy,
+    string UserId
 );
 
 public record SendTextMessagesForMatchedJobCommand(
-    [property: SagaIdentity] Guid SagaId, 
-    PickupId PickupId
+    [property: SagaIdentity] Guid SagaId,
+    PickupId PickupId,
+    string PickupReference,
+    string TriggeredBy,
+    string UserId
 );
 
 public record SendTextMessagesForMatchedJobCompletedCommand(
-    [property: SagaIdentity] Guid SagaId, 
+    [property: SagaIdentity] Guid SagaId,
     PickupId PickupId
 );
 
@@ -42,7 +54,12 @@ public sealed class PickupMatchedEventSaga : Saga
             StartedAt = DateTimeOffset.UtcNow
         };
 
-        var command = new RemoveMatchedJobFromQueryListCommand(new PickupId(saga.Id), saga.Id);
+        var command = new RemoveMatchedJobFromQueryListCommand(
+            new PickupId(saga.Id),
+            @event.PickupReference,
+            saga.Id,
+            @event.TriggeredBy,
+            @event.UserId);
         return(saga, command);
     }
 
@@ -50,13 +67,23 @@ public sealed class PickupMatchedEventSaga : Saga
     {
         ArgumentNullException.ThrowIfNull(command);
         RemoveMatchedJobFromQueryListCompleted = true;
-        return new SendNotificationsForMatchedJobCommand(command.SagaId, command.PickupId);
+        return new SendNotificationsForMatchedJobCommand(
+            command.SagaId,
+            command.PickupId,
+            command.PickupReference,
+            command.TriggeredBy,
+            command.UserId);
     }
 
     public SendTextMessagesForMatchedJobCommand Handle(SendNotificationsForMatchedJobCompletedCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
         SendNotificationsForMatchedJobCompleted = true;
-        return new SendTextMessagesForMatchedJobCommand(command.SagaId, command.PickupId);
+        return new SendTextMessagesForMatchedJobCommand(
+            command.SagaId,
+            command.PickupId,
+            command.PickupReference,
+            command.TriggeredBy,
+            command.UserId);
     }
 }
