@@ -51,14 +51,12 @@ jobs:
           username: ${{ secrets.QA_SERVER_USER }}
           password: ${{ secrets.QA_SERVER_PASSWORD }}
           port: ${{ secrets.QA_SERVER_PORT }}
-          envs: QA_FIREBASE_CREDENTIALS
           script: |
             set -euo pipefail
 
             IMAGE_TAG="${{ inputs['image-tag'] }}"
             IMAGE_REF="${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
             CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
-            FIREBASE_CREDS_PATH="/tmp/${CONTAINER_NAME}-firebase-creds.json"
             PREVIOUS_IMAGE_ID=""
 
             if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -99,18 +97,12 @@ jobs:
 
             sleep 3
 
-            echo "Writing Firebase credentials to temp file..."
-            umask 077
-            printf '%s' "$QA_FIREBASE_CREDENTIALS" > "$FIREBASE_CREDS_PATH"
-            chmod 600 "$FIREBASE_CREDS_PATH"
-
             echo "Starting new container from $IMAGE_REF..."
             if ! docker run -d \
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
               --pull always \
               -p 8080:8080 \
-              -v "${FIREBASE_CREDS_PATH}:/app/firebase-creds.json:ro" \
               -e ASPNETCORE_ENVIRONMENT=Staging \
               -e "ConnectionStrings__DefaultConnection=${{ secrets.QA_DB_CONNECTION_STRING }}" \
               -e "ConnectionStrings__RedisConnection=${{ secrets.QA_REDIS_CONNECTION_STRING }}" \
@@ -130,10 +122,9 @@ jobs:
               -e "Cloudinary__ApiKey=${{ secrets.QA_CLOUDINARY_APIKEY }}" \
               -e "Cloudinary__ApiSecret=${{ secrets.QA_CLOUDINARY_APISECRET }}" \
               -e "Cors__AllowedOrigins=${{ secrets.QA_CORS_ALLOWEDORIGINS }}" \
-              -e "Firebase__CredentialsPath=/app/firebase-creds.json" \
+              -e "Firebase__CredentialsJson=${{ secrets.QA_FIREBASE_CREDENTIALS }}" \
               "$IMAGE_REF"; then
               echo "❌ Failed to start container. Rolling back..."
-              rm -f "$FIREBASE_CREDS_PATH"
               if [ -n "$PREVIOUS_IMAGE_ID" ]; then
                 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
                 echo "Previous image was $PREVIOUS_IMAGE_ID"
