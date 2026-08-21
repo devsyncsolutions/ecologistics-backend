@@ -122,6 +122,7 @@ jobs:
               -e "Cloudinary__ApiKey=${{ secrets.QA_CLOUDINARY_APIKEY }}" \
               -e "Cloudinary__ApiSecret=${{ secrets.QA_CLOUDINARY_APISECRET }}" \
               -e "Cors__AllowedOrigins=${{ secrets.QA_CORS_ALLOWEDORIGINS }}" \
+              -e "Firebase__CredentialsJson=${{ secrets.QA_FIREBASE_CREDENTIALS }}"
               "$IMAGE_REF"; then
               echo "❌ Failed to start container. Rolling back..."
               if [ -n "$PREVIOUS_IMAGE_ID" ]; then
