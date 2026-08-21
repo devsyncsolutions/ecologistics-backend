@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Ecologistics.Common.Interfaces;
-using Ecologistics.Common.Utilities;
-
 namespace EcoLogistics.Host.Services;
 
 public class TextMessagingService(
@@ -15,7 +12,7 @@ public class TextMessagingService(
 {
     public async Task<bool> SendAsync(string phoneNumber, string message, string? requestId = null, CancellationToken cancellationToken = default)
     {
-        var http = httpClient.CreateClient("arkessel");
+        HttpClient http = httpClient.CreateClient("arkessel");
 
         var body = new
         {
@@ -26,18 +23,19 @@ public class TextMessagingService(
 
         try
         {
-            var response = await http.PostAsJsonAsync($"/api/v2/sms/send", body, cancellationToken)
+            HttpResponseMessage response = await http.PostAsJsonAsync($"/api/v2/sms/send", body, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                await cache.RemoveAsync(CacheKeys.GetRequestKey<LoginCommand>(requestId!), token: cancellationToken).ConfigureAwait(false);
-                logger.LogErrorMessage(
-                    $"Error sending text message to {phoneNumber}: {response.ReasonPhrase}",
-                    null,
-                    phoneNumber,
-                    null);
-            }
+            if (response.IsSuccessStatusCode) return response.IsSuccessStatusCode;
+
+            if(!string.IsNullOrWhiteSpace(requestId))
+                await cache.RemoveAsync(CacheKeys.GetRequestKey<LoginCommand>(requestId), token: cancellationToken).ConfigureAwait(false);
+
+            logger.LogErrorMessage(
+                $"Error sending text message to {phoneNumber}: {response.ReasonPhrase}",
+                null,
+                phoneNumber,
+                null);
 
             return response.IsSuccessStatusCode;
         }
@@ -50,9 +48,7 @@ public class TextMessagingService(
                 null);
 
             if (!string.IsNullOrWhiteSpace(requestId))
-            {
                 await cache.RemoveAsync(CacheKeys.GetRequestKey<LoginCommand>(requestId), token: cancellationToken).ConfigureAwait(false);
-            }
 
             return false;
         }

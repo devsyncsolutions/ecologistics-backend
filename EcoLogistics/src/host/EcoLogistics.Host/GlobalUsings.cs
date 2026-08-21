@@ -6,6 +6,8 @@ global using System.Net;
 global using System.Threading.RateLimiting;
 global using Carter;
 global using Ecologistics.Common.Exceptions;
+global using Ecologistics.Common.Interfaces;
+global using Ecologistics.Common.Utilities;
 global using EcoLogistics.Host.DI;
 global using EcoLogistics.Host.Services;
 global using EcoLogistics.Host.Utilities;

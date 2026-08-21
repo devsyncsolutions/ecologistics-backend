@@ -3,7 +3,6 @@
 
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Ecologistics.Common.Interfaces;
 
 namespace EcoLogistics.Host.Services;
 

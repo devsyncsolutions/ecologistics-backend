@@ -5,8 +5,10 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CloudinaryDotNet;
-using Ecologistics.Common.Interfaces;
+using Ecolgistics.NotificationsManagment.Infrastructure.Services;
 using EcoLogistics.Host.Middlewares;
+using Ecologistics.NotificationsManagment.UseCases.DI;
+using Ecologistics.NotificationsManagment.UseCases.GetNotifications;
 using Ecologistics.PickupManagement.Infrastructure.Data;
 using Ecologistics.PickupManagement.Infrastructure.Services;
 using Ecologistics.PickupManagement.UseCases.DI;
@@ -25,6 +27,7 @@ using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
+using Wolverine.EntityFrameworkCore;
 
 namespace EcoLogistics.Host.DI;
 
@@ -35,6 +38,7 @@ internal static class ServicesSetup
         builder.Services.AddUserManagementServices(builder.Configuration);
         builder.Services.AddTenantManagementServices(builder.Configuration);
         builder.Services.AddPickupManagementServices(builder.Configuration);
+        builder.Services.AddNotificationsManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);
@@ -55,7 +59,7 @@ internal static class ServicesSetup
         builder.Services.AddProblemDetails();
         builder.Services.AddHttpContextAccessor();
 
-        builder.Host.UseDefaultServiceProvider((context, options) =>
+        builder.Host.UseDefaultServiceProvider((_, options) =>
         {
             options.ValidateScopes = true;
             options.ValidateOnBuild = true;
@@ -250,14 +254,23 @@ internal static class ServicesSetup
 
             options.PersistMessagesWithPostgresql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
+            // Enable EF Core transaction integration
+            options.UseEntityFrameworkCoreTransactions();
+
+            // Turn on the transactional outbox and inbox patterns globally
+            options.Policies.UseDurableOutboxOnAllSendingEndpoints();
+            options.Policies.UseDurableInboxOnAllListeners();
+
             options.CodeGeneration.AlwaysUseServiceLocationFor<IAuthenticationServices>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITextMessagingService>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IPickupManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<INotificationsManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(CreateATenantCompanyCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetPickupJobsQueryHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(GetNotificationsQueryHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

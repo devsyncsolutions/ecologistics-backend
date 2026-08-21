@@ -4,6 +4,7 @@
 global using System.Globalization;
 global using Carter;
 global using Ecologistics.Common.Abstractions;
+global using Ecologistics.Common.Contracts.Commands;
 global using Ecologistics.Common.Contracts.Queries;
 global using Ecologistics.Common.Contracts.Responses;
 global using Ecologistics.Common.Enums;
@@ -20,7 +21,9 @@ global using Ecologistics.PickupManagement.Domain.PickupAggregate.Events;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate.ValueObjects;
 global using Ecologistics.PickupManagement.Infrastructure.Data;
 global using Ecologistics.PickupManagement.Infrastructure.Services;
+global using Ecologistics.PickupManagement.UseCases.CancelPickupJob;
 global using FluentValidation;
+global using FluentValidation.Results;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
