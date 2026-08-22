@@ -28,9 +28,15 @@ public static class SetNotificationsManagementServices
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        string credentialJson = configuration["Firebase:CredentialsJson"] ?? throw new InvalidOperationException("Firebase credentials JSON not configured");
+        string? credentialPath = configuration["Firebase:CredentialsPath"];
+        if (string.IsNullOrWhiteSpace(credentialPath) || !File.Exists(credentialPath))
+        {
+            throw new InvalidOperationException(
+                $"Firebase credentials file not found at '{credentialPath}'. " +
+                "Set Firebase:CredentialsPath and mount the file with -v.");
+        }
 
-        ServiceAccountCredential serviceAccountCredential = CredentialFactory.FromJson<ServiceAccountCredential>(credentialJson);
+        ServiceAccountCredential serviceAccountCredential = CredentialFactory.FromFile<ServiceAccountCredential>(credentialPath);
         var googleCredential = GoogleCredential.FromServiceAccountCredential(serviceAccountCredential);
 
         FirebaseApp.Create(new AppOptions

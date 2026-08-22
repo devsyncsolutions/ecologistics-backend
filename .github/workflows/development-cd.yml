@@ -57,6 +57,7 @@ jobs:
             IMAGE_TAG="${{ inputs['image-tag'] }}"
             IMAGE_REF="${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
             CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
+            FIREBASE_CREDS_PATH="/tmp/${CONTAINER_NAME}-firebase-creds.json"
             PREVIOUS_IMAGE_ID=""
 
             if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -97,12 +98,26 @@ jobs:
 
             sleep 3
 
+            echo "Writing Firebase credentials to temp file..."
+            umask 077
+            echo "${{ secrets.QA_FIREBASE_CREDENTIALS }}" | base64 -d > "$FIREBASE_CREDS_PATH"
+            chmod 600 "$FIREBASE_CREDS_PATH"
+
+            if ! (command -v jq >/dev/null 2>&1 && jq . "$FIREBASE_CREDS_PATH" > /dev/null 2>&1) \
+               && ! (command -v python3 >/dev/null 2>&1 && python3 -m json.tool < "$FIREBASE_CREDS_PATH" > /dev/null 2>&1); then
+              echo "❌ Decoded Firebase credentials are not valid JSON. Aborting."
+              rm -f "$FIREBASE_CREDS_PATH"
+              exit 1
+            fi
+            echo "✅ Firebase credentials file decoded and validated"
+
             echo "Starting new container from $IMAGE_REF..."
             if ! docker run -d \
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
               --pull always \
               -p 8080:8080 \
+              -v "${FIREBASE_CREDS_PATH}:/app/firebase-creds.json:ro" \
               -e ASPNETCORE_ENVIRONMENT=Staging \
               -e "ConnectionStrings__DefaultConnection=${{ secrets.QA_DB_CONNECTION_STRING }}" \
               -e "ConnectionStrings__RedisConnection=${{ secrets.QA_REDIS_CONNECTION_STRING }}" \
@@ -122,9 +137,10 @@ jobs:
               -e "Cloudinary__ApiKey=${{ secrets.QA_CLOUDINARY_APIKEY }}" \
               -e "Cloudinary__ApiSecret=${{ secrets.QA_CLOUDINARY_APISECRET }}" \
               -e "Cors__AllowedOrigins=${{ secrets.QA_CORS_ALLOWEDORIGINS }}" \
-              -e "Firebase__CredentialsJson=${{ secrets.QA_FIREBASE_CREDENTIALS }}" \
+              -e "Firebase__CredentialsPath=/app/firebase-creds.json" \
               "$IMAGE_REF"; then
               echo "❌ Failed to start container. Rolling back..."
+              rm -f "$FIREBASE_CREDS_PATH"
               if [ -n "$PREVIOUS_IMAGE_ID" ]; then
                 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
                 echo "Previous image was $PREVIOUS_IMAGE_ID"

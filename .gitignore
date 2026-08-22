@@ -443,3 +443,4 @@ app_*
 *.DotSettngs
 
 docker-compose.yml
+ecologistics-*.json
