@@ -165,7 +165,11 @@ jobs:
               fi
             else
               echo "❌ Container $CONTAINER_NAME failed to start"
-              docker logs "$CONTAINER_NAME" 2>/dev/null || echo "No logs available"
+              echo "----- Exit reason -----"
+              docker inspect --format='ExitCode: {{.State.ExitCode}} | Error: {{.State.Error}} | OOMKilled: {{.State.OOMKilled}}' "$CONTAINER_NAME" 2>/dev/null || echo "Could not inspect container state"
+              echo "----- Container logs (full) -----"
+              docker logs "$CONTAINER_NAME" 2>&1 || echo "No logs available"
+              echo "----------------------------------"
               echo "Rolling back to previous container state..."
               docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
               if [ -n "$PREVIOUS_IMAGE_ID" ]; then
