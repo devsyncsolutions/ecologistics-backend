@@ -35,11 +35,11 @@ public class RegisterUserAccountCommandHandler(
         IFusionCache cache,
         CancellationToken cancellationToken)
     {
-        var existingDistrict = await bus
+        GetDistrictResponse existingDistrict = await bus
             .InvokeAsync<GetDistrictResponse>(new GetDistrictQuery(command.DistrictId), cancellationToken)
             .ConfigureAwait(false);
 
-        if (existingDistrict is null)
+        if (string.IsNullOrWhiteSpace(existingDistrict.DistrictId))
         {
             await cache.RemoveAsync(CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
                 token: cancellationToken).ConfigureAwait(false);

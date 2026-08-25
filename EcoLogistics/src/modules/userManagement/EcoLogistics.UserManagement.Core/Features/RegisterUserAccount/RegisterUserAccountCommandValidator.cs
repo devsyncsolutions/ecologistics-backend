@@ -26,5 +26,8 @@ public sealed class RegisterUserAccountCommandValidator : AbstractValidator<Regi
         RuleFor(x => x.Gender)
             .NotEmpty().WithMessage("Gender is required.")
             .Must(gender => gender is "Male" or "Female").WithMessage("Invalid gender specified.");
+
+        RuleFor(x => x.DistrictId)
+            .NotEmpty().WithMessage("District is required.");
     }
 }
