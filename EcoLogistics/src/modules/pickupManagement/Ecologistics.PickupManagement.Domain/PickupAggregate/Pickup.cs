@@ -110,7 +110,7 @@ public class Pickup : BaseAggregate<PickupId>
         var timeStamp = new TimeStamp(TimeStamp.ScheduledForPickupAt, DateTimeOffset.UtcNow);
         TimeStamp = timeStamp;
 
-        AddDomainEvent(new PickupStartedEvent(Reference, CreatedBy!, CollectorMemberId!));
+        AddDomainEvent(new PickupStartedEvent(Id, Reference, CreatedBy!, CollectorMemberId!, Type));
     }
 
     public void MoveToProgress()
@@ -177,6 +177,16 @@ public class Pickup : BaseAggregate<PickupId>
     {
         DownloadableInvoiceUrl = invoiceUrl;
         return invoiceUrl;
+    }
+
+    public void UpdateCollectorMemberId(string collectorMemberId)
+    {
+        CollectorMemberId = collectorMemberId;
+    }
+
+    public void UpdateParentPickupId(PickupId parentPickupId)
+    {
+        RecurringProperties!.ParentPickupId = parentPickupId;
     }
 
     public void UpdatePickup(

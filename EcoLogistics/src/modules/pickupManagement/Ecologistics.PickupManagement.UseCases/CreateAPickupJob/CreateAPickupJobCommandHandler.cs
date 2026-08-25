@@ -5,6 +5,7 @@ namespace Ecologistics.PickupManagement.UseCases.CreateAPickupJob;
 
 public class CreateAPickupJobCommandHandler(
     IPickupManagementDbContext dbContext,
+    IPickupServices pickupServices,
     IFusionCache cache,
     ILoggedInUserService loggedInUserService)
 {
@@ -20,7 +21,7 @@ public class CreateAPickupJobCommandHandler(
 
         Guid newPickupId = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<CreateAPickupJobCommand>(command.RequestId),
-            async _ => await CreateNewPickupAsync(dbContext, loggedInUserService, command, cancellationToken).ConfigureAwait(false),
+            async _ => await CreateNewPickupAsync(dbContext, loggedInUserService, pickupServices, command, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromMinutes(30),
@@ -35,6 +36,7 @@ public class CreateAPickupJobCommandHandler(
     private static async Task<Guid> CreateNewPickupAsync(
         IPickupManagementDbContext dbContext,
         ILoggedInUserService loggedInUserService,
+        IPickupServices pickupServices,
         CreateAPickupJobCommand command,
         CancellationToken cancellationToken)
     {
@@ -59,7 +61,7 @@ public class CreateAPickupJobCommandHandler(
 
         var type = Enum.Parse<PickupType>(command.Type);
 
-        string reference = await GenerateReference(dbContext, command.FormattedAddress, cancellationToken).ConfigureAwait(false);
+        string reference = await pickupServices.GenerateReference(command.FormattedAddress, cancellationToken).ConfigureAwait(false);
         var newPickup = Pickup.Create(
             pickupFeeId,
             type,
@@ -81,21 +83,5 @@ public class CreateAPickupJobCommandHandler(
         await dbContext.Pickups.AddAsync(newPickup, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return newPickup.Id.Value;
-    }
-
-    private static async Task<string> GenerateReference(IPickupManagementDbContext dbContext, string formattedAddress, CancellationToken cancellationToken)
-    {
-        bool alreadyUsed = true;
-        string reference = "";
-
-        while (alreadyUsed)
-        {
-            string initial = formattedAddress.Length >= 2 ? formattedAddress[..2] : formattedAddress;
-            reference = $"{initial.ToUpper()}-{CacheKeys.GenerateARegistrationNumber(4)}";
-            alreadyUsed = await dbContext.Pickups
-                .AnyAsync(p => p.Reference == reference, cancellationToken).ConfigureAwait(false);
-        }
-
-        return reference;
     }
 }

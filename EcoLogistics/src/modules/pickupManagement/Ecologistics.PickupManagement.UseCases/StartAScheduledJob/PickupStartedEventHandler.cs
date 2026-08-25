@@ -9,7 +9,7 @@ public class PickupStartedEventHandler(
 {
     private const string Title = "Pickup started";
 
-    public async Task Handle(PickupStartedEvent @event, CancellationToken cancellationToken)
+    public async Task<CreateAnotherPickupJobIfJobIsRecurringCommand> Handle(PickupStartedEvent @event, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
@@ -18,6 +18,8 @@ public class PickupStartedEventHandler(
         Task collectorNotificationTask = SendCollectorNotificationAsync(@event, bus, cancellationToken);
 
         await Task.WhenAll(messagingTask, generatorNotificationTask, collectorNotificationTask).ConfigureAwait(false);
+
+        return new CreateAnotherPickupJobIfJobIsRecurringCommand(@event.Id, @event.Type);
     }
 
     private static async Task SendMessageAsync(PickupStartedEvent @event, ITextMessagingService textMessagingService, IMessageBus bus, CancellationToken cancellationToken)

@@ -9,6 +9,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
         <PackageReference Include="AspNetCore.HealthChecks.Uris" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -17,6 +18,11 @@
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
         <PackageReference Include="Microsoft.OpenApi" />
+        <PackageReference Include="Npgsql.OpenTelemetry" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
         <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Sentry.Serilog" />
         <PackageReference Include="Serilog.AspNetCore" />
@@ -28,6 +34,7 @@
         <PackageReference Include="WolverineFx.EntityFrameworkCore" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\modules\hub\Ecologistics.HubsManagement\Ecologistics.HubsManagement.csproj" />
       <ProjectReference Include="..\..\modules\notificationsManagement\Ecologistics.NotificationsManagment.UseCases\Ecologistics.NotificationsManagment.UseCases.csproj" />
       <ProjectReference Include="..\..\modules\pickupManagement\Ecologistics.PickupManagement.UseCases\Ecologistics.PickupManagement.UseCases.csproj" />
       <ProjectReference Include="..\..\modules\tenantManagement\Ecologistics.TenantManagement.Presentation\Ecologistics.TenantManagement.Presentation.csproj" />
@@ -37,5 +44,8 @@
       <Content Include="..\..\..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="firebase-staging.json\" />
     </ItemGroup>
 </Project>

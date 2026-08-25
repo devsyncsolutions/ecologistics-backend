@@ -5,8 +5,10 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CloudinaryDotNet;
+using Ecolgistics.NotificationsManagment.Infrastructure.Data;
 using Ecolgistics.NotificationsManagment.Infrastructure.Services;
 using EcoLogistics.Host.Middlewares;
+using Ecologistics.HubsManagement.DI;
 using Ecologistics.NotificationsManagment.UseCases.DI;
 using Ecologistics.NotificationsManagment.UseCases.GetNotifications;
 using Ecologistics.PickupManagement.Infrastructure.Data;
@@ -20,6 +22,13 @@ using Ecologistics.TenantManagement.UseCases.Tenants.CreateATenantCompany;
 using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 using EcoLogistics.UserManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Polly.Timeout;
 using RabbitMQ.Client;
 using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
@@ -39,6 +48,7 @@ internal static class ServicesSetup
         builder.Services.AddTenantManagementServices(builder.Configuration);
         builder.Services.AddPickupManagementServices(builder.Configuration);
         builder.Services.AddNotificationsManagementServices(builder.Configuration);
+        builder.Services.AddHubsManagementServices();
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureLogging(builder);
@@ -52,22 +62,16 @@ internal static class ServicesSetup
         ConfigureHealthChecks(builder);
         ConfigureTickerQ(builder);
         ConfigureCloudinary(builder);
-
-        builder.Services.AddTransient<ITextMessagingService, TextMessagingService>();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddExceptionHandler<GlobalExceptionMiddleware>();
-        builder.Services.AddProblemDetails();
-        builder.Services.AddHttpContextAccessor();
-
-        builder.Host.UseDefaultServiceProvider((_, options) =>
-        {
-            options.ValidateScopes = true;
-            options.ValidateOnBuild = true;
-        });
+        ConfigureSignalR(builder);
 
         return builder.Build();
     }
 
+    private static void ConfigureSignalR(WebApplicationBuilder builder)
+    {
+        builder.Services.AddSignalR()
+        .AddStackExchangeRedis(builder.Configuration.GetConnectionString("RedisConnection")!);
+    }
     private static void ConfigureCloudinary(WebApplicationBuilder builder)
     {
         Account account = new(
@@ -93,8 +97,6 @@ internal static class ServicesSetup
                 opt.WithBasicAuth(builder.Configuration["TickerQ:Dashboard:Username"]!, builder.Configuration["TickerQ:Dashboard:Password"]!);
             });
 
-            if (builder.Environment.IsDevelopment()) return;
-
             options.AddStackExchangeRedis(redis =>
             {
                 redis.Configuration = builder.Configuration.GetConnectionString("RedisConnection")!;
@@ -112,14 +114,16 @@ internal static class ServicesSetup
     }
     private static void ConfigureHealthChecks(WebApplicationBuilder builder)
     {
-        var healthChecks = builder.Services.AddHealthChecks()
+        builder.Services.AddHealthChecks()
             .AddDbContextCheck<UserManagementDbContext>("UserManagementDbContext", HealthStatus.Unhealthy)
             .AddDbContextCheck<TenantManagementDbContext>("TenantManagementDbContext", HealthStatus.Unhealthy)
             .AddDbContextCheck<PickupManagementDbContext>("PickupManagementDbContext", HealthStatus.Unhealthy)
-            .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
-
-        if (builder.Environment.IsDevelopment())
-            return;
+            .AddDbContextCheck<NotificationsManagementDbContext>("NotificationsManagementDbContext", HealthStatus.Unhealthy)
+            .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
+            .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
+            .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
+            .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
+                failureStatus: HealthStatus.Unhealthy);
 
         string rabbitConnectionString = builder.Configuration.GetConnectionString("RabbitMQConnection")!;
 
@@ -132,12 +136,6 @@ internal static class ServicesSetup
             };
             return factory.CreateConnectionAsync().GetAwaiter().GetResult();
         });
-
-        healthChecks
-            .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
-            .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
-            .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
-                failureStatus: HealthStatus.Unhealthy);
     }
     private static void ConfigureOpenApiDocumentation(WebApplicationBuilder builder)
     {
@@ -187,29 +185,8 @@ internal static class ServicesSetup
                         formatProvider: CultureInfo.InvariantCulture);
             });
         }
-        else
-        {
-            builder.Host.UseSerilog((_, _, configuration) =>
-            {
-                configuration
-                    .MinimumLevel.Information()
-                    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
 
-                string sentryDsn = builder.Configuration["Sentry:Dsn"] ?? throw new InvalidOperationException("SENTRY_DSN is not set");
-
-                if (!string.IsNullOrWhiteSpace(sentryDsn))
-                {
-                    configuration.WriteTo.Sentry(opt =>
-                    {
-                        opt.MinimumBreadcrumbLevel = LogEventLevel.Debug;
-                        opt.MinimumEventLevel = LogEventLevel.Warning;
-                        opt.Dsn = sentryDsn;
-                        opt.TracesSampleRate = 0.1;
-                        opt.EnableLogs = true;
-                    });
-                }
-            });
-        }
+        ConfigureOpenTelemetry(builder);
     }
     private static void ConfigureArkesselMessagingClient(WebApplicationBuilder builder)
     {
@@ -238,11 +215,23 @@ internal static class ServicesSetup
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
                 options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
             });
+
+        builder.Services.Configure<Arkessel>(builder.Configuration.GetSection("Arkessel"));
+        builder.Services.AddTransient(sp => sp.GetRequiredService<IOptions<Arkessel>>().Value);
     }
     private static void ConfigureUtilities(WebApplicationBuilder builder)
     {
-        builder.Services.Configure<Arkessel>(builder.Configuration.GetSection("Arkessel"));
-        builder.Services.AddTransient(sp => sp.GetRequiredService<IOptions<Arkessel>>().Value);
+        builder.Services.AddTransient<ITextMessagingService, TextMessagingService>();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddExceptionHandler<GlobalExceptionMiddleware>();
+        builder.Services.AddProblemDetails();
+        builder.Services.AddHttpContextAccessor();
+
+        builder.Host.UseDefaultServiceProvider((_, options) =>
+        {
+            options.ValidateScopes = true;
+            options.ValidateOnBuild = true;
+        });
     }
     private static void ConfigureWolverine(WebApplicationBuilder builder)
     {
@@ -372,6 +361,44 @@ internal static class ServicesSetup
                     }, cancellationToken: token).ConfigureAwait(false);
                 }
             };
+        });
+    }
+
+    private static void ConfigureOpenTelemetry(WebApplicationBuilder builder)
+    {
+        string serviceName = builder.Configuration["OpenTelemetry:ServiceName"] ?? "EcoLogistics.Api";
+        string serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";
+#pragma warning disable S5332
+        string otlpEndpoint = builder.Configuration["OpenTelemetry:OtelEndpoint"] ?? "http://seq:5341/ingest/otlp";
+#pragma warning restore S5332
+
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService(serviceName, serviceVersion))
+            .WithTracing(tracing => tracing
+                .AddSource("Wolverine")
+                .AddSource("ZiggyCreatures.FusionCache")
+                .AddAspNetCoreInstrumentation()
+                .AddNpgsql()
+                .AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint)))
+                //.AddHttpClientInstrumentation())
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddOtlpExporter(o =>
+                {
+                    o.Endpoint = new Uri(otlpEndpoint);
+                    o.Protocol = OtlpExportProtocol.HttpProtobuf;
+                }));
+
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeScopes = true;
+            logging.IncludeFormattedMessage = true;
+            logging.AddOtlpExporter(o =>
+            {
+                o.Endpoint = new Uri(otlpEndpoint);
+                o.Protocol = OtlpExportProtocol.HttpProtobuf;
+            });
         });
     }
 
