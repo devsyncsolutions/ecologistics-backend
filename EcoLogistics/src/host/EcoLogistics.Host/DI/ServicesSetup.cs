@@ -31,6 +31,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Polly.Timeout;
 using RabbitMQ.Client;
+using StackExchange.Redis;
 using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
@@ -375,12 +376,13 @@ internal static class ServicesSetup
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService(serviceName, serviceVersion))
             .WithTracing(tracing => tracing
-                .AddSource("Wolverine")
-                .AddSource("ZiggyCreatures.FusionCache")
+                .AddSource(TelemetryConfigs.WolverineSourceName)
+                .AddSource(TelemetryConfigs.FusionSourceName)
+                .AddSource(TelemetryConfigs.RedisSourceName)
                 .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
                 .AddNpgsql()
                 .AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint)))
-                //.AddHttpClientInstrumentation())
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
@@ -399,6 +401,12 @@ internal static class ServicesSetup
                 o.Endpoint = new Uri(otlpEndpoint);
                 o.Protocol = OtlpExportProtocol.HttpProtobuf;
             });
+        });
+
+        builder.Services.AddSingleton<TracedRedisDatabase>(sp =>
+        {
+            IConnectionMultiplexer mux = sp.GetRequiredService<IConnectionMultiplexer>();
+            return new TracedRedisDatabase(mux.GetDatabase());
         });
     }
 

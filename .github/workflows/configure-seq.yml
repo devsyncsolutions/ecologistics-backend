@@ -43,7 +43,7 @@ jobs:
                           --restart unless-stopped \
                           --network ecologistics-net \
                           -e ACCEPT_EULA=Y \
-                          -p 127.0.0.1:5341:80 \
+                          -p 5341:5341 \
                           -v seq-data:/data \
                           datalust/seq:latest
                       echo "✅ Seq container started"
