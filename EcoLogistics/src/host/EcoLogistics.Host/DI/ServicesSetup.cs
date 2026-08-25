@@ -52,7 +52,7 @@ internal static class ServicesSetup
         builder.Services.AddHubsManagementServices();
 
         ConfigureOpenApiDocumentation(builder);
-        ConfigureLogging(builder);
+        ConfigureOpenTelemetry(builder);
         ConfigureArkesselMessagingClient(builder);
         ConfigureUtilities(builder);
         ConfigureWolverine(builder);
@@ -167,28 +167,6 @@ internal static class ServicesSetup
 
             conf.WithResponseNegotiator<XmlResponseNegotiator>();
         });
-    private static void ConfigureLogging(WebApplicationBuilder builder)
-    {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-            .CreateLogger();
-
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Host.UseSerilog((_, _, configuration) =>
-            {
-                configuration.MinimumLevel.Information()
-                    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-                    .WriteTo.File(
-                        "logs/log-.txt",
-                        rollingInterval: RollingInterval.Day,
-                        formatProvider: CultureInfo.InvariantCulture);
-            });
-        }
-
-        ConfigureOpenTelemetry(builder);
-    }
     private static void ConfigureArkesselMessagingClient(WebApplicationBuilder builder)
     {
         string baseUrl = builder.Configuration["Arkessel:BaseUrl"]
@@ -364,13 +342,13 @@ internal static class ServicesSetup
             };
         });
     }
-
     private static void ConfigureOpenTelemetry(WebApplicationBuilder builder)
     {
         string serviceName = builder.Configuration["OpenTelemetry:ServiceName"] ?? "EcoLogistics.Api";
         string serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";
+        string apiKey = builder.Configuration["OpenTelemetry:ApiKey"]!;
 #pragma warning disable S5332
-        string otlpEndpoint = builder.Configuration["OpenTelemetry:OtelEndpoint"] ?? "http://seq:5341/ingest/otlp";
+        string otlpEndpoint = builder.Configuration["OpenTelemetry:OtelEndpoint"] ?? "http://seq:5341/ingest/otlp/v1/logs";
 #pragma warning restore S5332
 
         builder.Services.AddOpenTelemetry()
@@ -390,6 +368,7 @@ internal static class ServicesSetup
                 {
                     o.Endpoint = new Uri(otlpEndpoint);
                     o.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    o.Headers = apiKey;
                 }));
 
         builder.Logging.AddOpenTelemetry(logging =>
@@ -400,6 +379,7 @@ internal static class ServicesSetup
             {
                 o.Endpoint = new Uri(otlpEndpoint);
                 o.Protocol = OtlpExportProtocol.HttpProtobuf;
+                o.Headers = apiKey;
             });
         });
 

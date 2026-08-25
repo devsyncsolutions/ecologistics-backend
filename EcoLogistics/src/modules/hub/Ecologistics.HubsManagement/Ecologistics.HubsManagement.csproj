@@ -16,8 +16,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <PackageReference Include="Newtonsoft.Json" />
       <PackageReference Include="WolverineFx" />
       <PackageReference Include="ZiggyCreatures.FusionCache" />
     </ItemGroup>

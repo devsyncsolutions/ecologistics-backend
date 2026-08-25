@@ -25,10 +25,6 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
         <PackageReference Include="Scalar.AspNetCore" />
-        <PackageReference Include="Sentry.Serilog" />
-        <PackageReference Include="Serilog.AspNetCore" />
-        <PackageReference Include="Serilog.Sinks.Console" />
-        <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="TickerQ.Caching.StackExchangeRedis" />
         <PackageReference Include="TickerQ.Dashboard" />
         <PackageReference Include="TickerQ.EntityFrameworkCore" />
