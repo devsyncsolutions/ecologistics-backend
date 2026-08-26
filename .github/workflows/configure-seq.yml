@@ -67,6 +67,7 @@ jobs:
                           -e ACCEPT_EULA=Y \
                           -e SEQ_FIRSTRUN_ADMINPASSWORDHASH=${{ secrets.QA_SEQ_ADMIN_PASS }} \
                           -p 5341:5341 \
+                          -p 8082:80 \
                           -v seq-data:/data \
                           datalust/seq:latest
                       echo "✅ Seq container started"
