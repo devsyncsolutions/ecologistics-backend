@@ -29,4 +29,10 @@ public static class CacheKeys
     public static string GetNotificationsKey(string userId, bool? queryUnseenOnly) => $"Notifications:{userId}:{queryUnseenOnly}";
 
     public static Task ToTask(ValueTask valueTask) => valueTask.AsTask();
+
+    public static string CanTrackJobKey(Guid queryPickupJobId, string queryUserId) => $"CanTrackJob:{queryPickupJobId}:{queryUserId}";
+
+    public static string IsAssignedToJobKey(Guid queryPickupJobId, string queryUserId) => $"IsAssignedToJob:{queryPickupJobId}:{queryUserId}";
+
+    public static string StateKey(Guid jobId) => $"PickupJobTrackingState:{jobId}";
 }

@@ -14,7 +14,15 @@ public sealed class SeedRoles : IEntityTypeConfiguration<IdentityRole>
 
         builder.HasData(new List<IdentityRole>
         {
-            new() { Name = nameof(AccountType.Collector) }, new() { Name = nameof(AccountType.Generator) }
+            new()
+            {
+                Name = nameof(AccountType.Collector),
+                NormalizedName = nameof(AccountType.Collector).ToUpperInvariant()
+            }, new()
+            {
+                Name = nameof(AccountType.Generator),
+                NormalizedName = nameof(AccountType.Generator).ToUpperInvariant()
+            }
         });
     }
 }

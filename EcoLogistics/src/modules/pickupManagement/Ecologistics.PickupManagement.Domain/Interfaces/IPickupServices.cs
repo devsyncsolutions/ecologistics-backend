@@ -3,9 +3,7 @@
 
 namespace Ecologistics.PickupManagement.Domain.Interfaces;
 
-#pragma warning disable CA1040
 public interface IPickupServices
-#pragma warning restore CA1040
 {
-
+    Task<string> GenerateReference(string formattedAddress, CancellationToken cancellationToken);
 }

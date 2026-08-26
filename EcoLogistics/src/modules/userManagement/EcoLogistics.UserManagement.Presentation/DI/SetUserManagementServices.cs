@@ -78,6 +78,21 @@ public static class SetUserManagementServices
                     ValidAudience = validAudience,
                     IssuerSigningKey = signInKey
                 };
+
+                // registering signal hub on the jwt auth
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        StringValues accessToken = context.Request.Query["access_token"];
+                        if(!string.IsNullOrWhiteSpace(accessToken) && context.Request.Path.StartsWithSegments("/hubs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
             });
 
         services.AddScoped<IAuthenticationServices, AuthenticationServices>();

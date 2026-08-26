@@ -4,6 +4,7 @@
 global using System.Globalization;
 global using System.Linq.Expressions;
 global using Ecologistics.Common.Abstractions;
+global using Ecologistics.Common.Utilities;
 global using Ecologistics.PickupManagement.Domain.Commons;
 global using Ecologistics.PickupManagement.Domain.Commons.Enums;
 global using Ecologistics.PickupManagement.Domain.Commons.ValueObjects;

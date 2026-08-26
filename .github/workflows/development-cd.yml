@@ -116,6 +116,7 @@ jobs:
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
               --pull always \
+              --network ecologistics-net \
               -p 8080:8080 \
               -v "${FIREBASE_CREDS_PATH}:/app/firebase-creds.json:ro" \
               -e ASPNETCORE_ENVIRONMENT=Staging \
@@ -123,6 +124,7 @@ jobs:
               -e "ConnectionStrings__RedisConnection=${{ secrets.QA_REDIS_CONNECTION_STRING }}" \
               -e "ConnectionStrings__RabbitMQConnection=${{ secrets.QA_RABBITMQ_CONNECTION_STRING }}" \
               -e "Sentry__Dsn=${{ secrets.QA_SENTRY_DSN }}" \
+              -e "OpenTelemetry__OtelEndpoint=http://ecologistics-seq:5341/ingest/otlp" \
               -e "Arkessel__ApiKey=${{ secrets.QA_ARKESSEL_APIKEY }}" \
               -e "Arkessel__BaseUrl=${{ secrets.QA_ARKESSEL_BASEURL }}" \
               -e "Arkessel__SenderId=${{ secrets.QA_ARKESSEL_SENDERID }}" \

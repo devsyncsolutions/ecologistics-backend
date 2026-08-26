@@ -3,7 +3,23 @@
 
 namespace Ecologistics.PickupManagement.Infrastructure.Services;
 
-public class PickupServices : IPickupServices
+public class PickupServices(IPickupManagementDbContext dbContext) : IPickupServices
 {
+    public async Task<string> GenerateReference(string formattedAddress, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(formattedAddress);
 
+        bool alreadyUsed = true;
+        string reference = "";
+
+        while (alreadyUsed)
+        {
+            string initial = formattedAddress.Length >= 2 ? formattedAddress[..2] : formattedAddress;
+            reference = $"{initial.ToUpper()}-{CacheKeys.GenerateARegistrationNumber(4)}";
+            alreadyUsed = await dbContext.Pickups
+                .AnyAsync(p => p.Reference == reference, cancellationToken).ConfigureAwait(false);
+        }
+
+        return reference;
+    }
 }
