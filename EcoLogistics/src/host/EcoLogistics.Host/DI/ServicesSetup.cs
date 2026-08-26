@@ -23,7 +23,6 @@ using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
 using EcoLogistics.UserManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -348,7 +347,7 @@ internal static class ServicesSetup
         string serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";
         string apiKey = builder.Configuration["OpenTelemetry:ApiKey"]!;
 #pragma warning disable S5332
-        string otlpEndpoint = builder.Configuration["OpenTelemetry:OtelEndpoint"] ?? "http://seq:5341/ingest/otlp/v1/logs";
+        string otlpEndpoint = builder.Configuration["OpenTelemetry:OtelEndpoint"] ?? "http://seq:5341";
 #pragma warning restore S5332
 
         builder.Services.AddOpenTelemetry()
@@ -360,6 +359,7 @@ internal static class ServicesSetup
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddNpgsql()
+                .AddEntityFrameworkCoreInstrumentation()
                 .AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint)))
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
@@ -371,8 +371,10 @@ internal static class ServicesSetup
                     o.Headers = apiKey;
                 }));
 
+        builder.Logging.ClearProviders();
         builder.Logging.AddOpenTelemetry(logging =>
         {
+            logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion));
             logging.IncludeScopes = true;
             logging.IncludeFormattedMessage = true;
             logging.AddOtlpExporter(o =>
