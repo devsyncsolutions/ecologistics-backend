@@ -43,7 +43,7 @@ jobs:
                           --restart unless-stopped \
                           --network ecologistics-net \
                           -e ACCEPT_EULA=Y \
-                          -e SEQ_FIRSTRUN_ADMINPASSWORDHASH=QHFh2g8n3dSlPSGDYcKrkxHygkRASe9HIq+S4b6kRNiBEy7ZyPft+mPVw4lLv9LBuvr/qp3FT9IokuxTCnoWjtYrJOAkOKH8TwFmH5A6unMC
+                          -e SEQ_FIRSTRUN_ADMINPASSWORDHASH=${{ secrets.QA_SEQ_ADMIN_PASS }}
                           -p 5341:5341 \
                           -v seq-data:/data \
                           datalust/seq:latest

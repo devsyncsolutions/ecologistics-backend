@@ -21,6 +21,9 @@ COPY ["src/modules/pickupManagement/Ecologistics.PickupManagement.UseCases/Ecolo
 COPY ["src/modules/tenantManagement/Ecologistics.TenantManagement.Presentation/Ecologistics.TenantManagement.Presentation.csproj", "src/modules/tenantManagement/Ecologistics.TenantManagement.Presentation/"]
 COPY ["src/modules/userManagement/EcoLogistics.UserManagement.Presentation/EcoLogistics.UserManagement.Presentation.csproj", "src/modules/userManagement/EcoLogistics.UserManagement.Presentation/"]
 COPY ["src/modules/hub/Ecologistics.HubsManagement/Ecologistics.HubsManagement.csproj", "src/modules/hub/Ecologistics.HubsManagement/"]
+COPY ["Directory.Build.props", "./"]
+COPY [".editorconfig", "./"]
+COPY ["Directory.Packages.props", "./"]
 RUN dotnet restore "src/host/EcoLogistics.Host/EcoLogistics.Host.csproj"
 COPY . .
 WORKDIR "/src/src/host/EcoLogistics.Host"
