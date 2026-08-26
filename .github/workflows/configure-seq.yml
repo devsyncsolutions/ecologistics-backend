@@ -8,6 +8,9 @@ on:
                 required: true
                 default: "latest"
 
+env:
+    CONTAINER_NAME: ecologistics-seq
+
 jobs:
     deploy-seq:
         name: Deploy seq (Manual Trigger)
@@ -33,13 +36,30 @@ jobs:
                   script: |
                       set -euo pipefail
 
+                      echo "Stopping existing container..."
+                      docker stop "$CONTAINER_NAME" || true
+                      docker rm "$CONTAINER_NAME" || true
+
+                      echo "Checking for other containers using port 5341..."
+                      CONFLICTING_CONTAINERS=$(docker ps -a --filter "publish=5341" --format "{{.Names}}" 2>/dev/null || echo "")
+                      if [ -n "$CONFLICTING_CONTAINERS" ]; then
+                      echo "Found containers using port 5341: $CONFLICTING_CONTAINERS"
+                      for container in $CONFLICTING_CONTAINERS; do
+                          echo "Stopping and removing container: $container"
+                          docker stop "$container" || true
+                          docker rm "$container" || true
+                      done
+                      fi
+
+                      sleep 3
+
                       # Create a shared network so containers can resolve each other by name
                       docker network create ecologistics-net 2>/dev/null || echo "Network already exists, continuing..."
 
                       # Only create Seq if it isn't already running
                       if ! docker ps -a --format '{{.Names}}' | grep -q "^ecologistics-seq$"; then
                       docker run -d \
-                          --name ecologistics-seq \
+                          --name "$CONTAINER_NAME" \
                           --restart unless-stopped \
                           --network ecologistics-net \
                           -e ACCEPT_EULA=Y \

@@ -360,18 +360,22 @@ internal static class ServicesSetup
                 .AddHttpClientInstrumentation()
                 .AddNpgsql()
                 .AddEntityFrameworkCoreInstrumentation()
-                .AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint)))
+                .AddOtlpExporter(o =>
+                {
+                    o.Endpoint = new Uri($"{otlpEndpoint}/v1/traces");
+                    o.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    o.Headers = apiKey;
+                }))
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
                 .AddOtlpExporter(o =>
                 {
-                    o.Endpoint = new Uri(otlpEndpoint);
+                    o.Endpoint = new Uri($"{otlpEndpoint}/v1/metrics");
                     o.Protocol = OtlpExportProtocol.HttpProtobuf;
                     o.Headers = apiKey;
                 }));
 
-        builder.Logging.ClearProviders();
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion));
@@ -379,7 +383,7 @@ internal static class ServicesSetup
             logging.IncludeFormattedMessage = true;
             logging.AddOtlpExporter(o =>
             {
-                o.Endpoint = new Uri(otlpEndpoint);
+                o.Endpoint = new Uri($"{otlpEndpoint}/v1/logs");
                 o.Protocol = OtlpExportProtocol.HttpProtobuf;
                 o.Headers = apiKey;
             });
