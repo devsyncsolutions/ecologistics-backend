@@ -140,6 +140,10 @@ jobs:
               -e "Cloudinary__ApiSecret=${{ secrets.QA_CLOUDINARY_APISECRET }}" \
               -e "Cors__AllowedOrigins=${{ secrets.QA_CORS_ALLOWEDORIGINS }}" \
               -e "Firebase__CredentialsPath=/app/firebase-creds.json" \
+              -e "OpenTelemetry__ServiceName=Ecologistics.Api" \
+              -e "OpenTelemetry__ServiceVersion=1.0.0" \
+              -e "OpenTelemetry__OtelEndpoint=http://seq:5341" \
+              -e "OpenTelemetry__ApiKey=${{ secrets.QA_TELEMETRY_KEY }}" \
               "$IMAGE_REF"; then
               echo "❌ Failed to start container. Rolling back..."
               rm -f "$FIREBASE_CREDS_PATH"

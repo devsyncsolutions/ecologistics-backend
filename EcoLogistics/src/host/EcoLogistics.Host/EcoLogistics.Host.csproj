@@ -39,11 +39,6 @@
       <ProjectReference Include="..\..\modules\userManagement\EcoLogistics.UserManagement.Presentation\EcoLogistics.UserManagement.Presentation.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="..\..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-    <ItemGroup>
       <Folder Include="firebase-staging.json\" />
     </ItemGroup>
 </Project>
