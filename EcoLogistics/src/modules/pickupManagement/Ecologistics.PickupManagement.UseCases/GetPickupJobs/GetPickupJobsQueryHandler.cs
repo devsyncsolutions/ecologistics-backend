@@ -67,9 +67,10 @@ public class GetPickupJobsQueryHandler(
 
         int totalCount = await list.CountAsync(cancellationToken).ConfigureAwait(false);
 
+        var pageSize = query.PageSize <= 10 ? query.PageSize : 10;
         var pagedResult = await list
-            .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((query.Page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -78,8 +79,8 @@ public class GetPickupJobsQueryHandler(
             Items = pagedResult,
             TotalCount = totalCount,
             Page = query.Page,
-            PageSize = query.PageSize,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize)
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         };
     }
 }

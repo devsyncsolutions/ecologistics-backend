@@ -35,4 +35,7 @@ public static class CacheKeys
     public static string IsAssignedToJobKey(Guid queryPickupJobId, string queryUserId) => $"IsAssignedToJob:{queryPickupJobId}:{queryUserId}";
 
     public static string StateKey(Guid jobId) => $"PickupJobTrackingState:{jobId}";
+    public static string GetWasteKinds => "WasteKinds";
+
+    public static string MovePickupToProgress(Guid commandPickupJobId) => $"MovePickupToProgress:{commandPickupJobId}";
 }
