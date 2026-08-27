@@ -9,7 +9,8 @@ public record IntervalReminderRequest(
     Guid PickupId,
     string Reference,
     DateTimeOffset ScheduledForPickupAt,
-    string CollectorMemberId);
+    string CollectorMemberId,
+    string TriggeredBy);
 
 // Get all pickupJobs scheduled for today
 // Set up recurring background jobs for each pickupJob
@@ -32,7 +33,8 @@ public class DailyPickupJobReminders(
                 p.Id,
                 p.CollectorMemberId,
                 p.Reference,
-                p.TimeStamp.ScheduledForPickupAt
+                p.TimeStamp.ScheduledForPickupAt,
+                p.CreatedBy
             })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -51,7 +53,8 @@ public class DailyPickupJobReminders(
                         pickup.Id.Value,
                         pickup.Reference,
                         pickup.ScheduledForPickupAt,
-                        pickup.CollectorMemberId!)),
+                        pickup.CollectorMemberId!,
+                        pickup.CreatedBy!)),
                 Retries = 3,
                 RetryIntervals = [5, 10, 15]
             })
