@@ -43,7 +43,7 @@ public class GetWasteKindsQueryHandler(
             .ThenBy(w => w.Name)
             .Skip((query.Page - 1) * pageSize)
             .Take(pageSize)
-            .Select(w => new WasteKindDto(w.Id.Value.ToString(), w.Name))
+            .Select(w => new WasteKindDto(w.Name))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

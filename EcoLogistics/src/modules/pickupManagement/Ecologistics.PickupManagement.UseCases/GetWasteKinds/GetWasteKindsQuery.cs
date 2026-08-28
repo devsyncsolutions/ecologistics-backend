@@ -8,4 +8,4 @@ public record GetWasteKindsQuery(
     int PageSize,
     string? SearchTerm);
 
-public record WasteKindDto(string Id, string Name);
+public record WasteKindDto(string Name);
