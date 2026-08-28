@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using Ecologistics.PickupManagement.UseCases.Jobs;
-using TickerQ.Utilities;
-
 namespace Ecologistics.PickupManagement.UseCases.MovePickupJobToProgress;
 
 public class MovePickupJobToProgressCommandHandler(
@@ -36,7 +33,8 @@ public class MovePickupJobToProgressCommandHandler(
     {
         Pickup pickup = await dbContext.Pickups
             .AsTracking()
-            .FirstAsync(p => p.Id == new PickupId(command.PickupJobId), cancellationToken)
+            .Where(p => p.Id == new PickupId(command.PickupJobId))
+            .FirstAsync(cancellationToken)
             .ConfigureAwait(false);
 
         pickup.MoveToProgress();
