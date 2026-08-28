@@ -1,43 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using CloudinaryDotNet;
-using Ecolgistics.NotificationsManagment.Infrastructure.Data;
-using Ecolgistics.NotificationsManagment.Infrastructure.Services;
-using EcoLogistics.Host.Middlewares;
-using Ecologistics.HubsManagement.DI;
-using Ecologistics.NotificationsManagment.UseCases.DI;
-using Ecologistics.NotificationsManagment.UseCases.GetNotifications;
-using Ecologistics.PickupManagement.Infrastructure.Data;
-using Ecologistics.PickupManagement.Infrastructure.Services;
-using Ecologistics.PickupManagement.UseCases.DI;
-using Ecologistics.PickupManagement.UseCases.GetPickupJobs;
-using Ecologistics.TenantManagement.Infrastructure.Data;
-using Ecologistics.TenantManagement.Presentation.DI;
-using Ecologistics.TenantManagement.UseCases.Interfaces;
-using Ecologistics.TenantManagement.UseCases.Tenants.CreateATenantCompany;
-using EcoLogistics.UserManagement.Core.Features.RegisterUserAccount;
-using EcoLogistics.UserManagement.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using Polly.Timeout;
-using RabbitMQ.Client;
-using StackExchange.Redis;
-using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
-using TickerQ.Dashboard.DependencyInjection;
-using TickerQ.DependencyInjection;
-using TickerQ.EntityFrameworkCore.DbContextFactory;
-using TickerQ.EntityFrameworkCore.DependencyInjection;
-using Wolverine.EntityFrameworkCore;
-
 namespace EcoLogistics.Host.DI;
 
 internal static class ServicesSetup
@@ -215,6 +178,9 @@ internal static class ServicesSetup
     {
         builder.Host.UseWolverine(options =>
         {
+            options.Policies.AddMiddleware<PerformanceMiddleware>(
+                chain => chain.MessageType.Name.Contains("Query", StringComparison.OrdinalIgnoreCase));
+
             options.UseRabbitMq(builder.Configuration.GetConnectionString("RabbitMQConnection")!)
                 .AutoProvision()
                 .UseConventionalRouting();

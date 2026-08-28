@@ -4,7 +4,6 @@
 using Ecologistics.HubsManagement.Hubs;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using TickerQ.DependencyInjection;
 
 namespace EcoLogistics.Host.DI;
 

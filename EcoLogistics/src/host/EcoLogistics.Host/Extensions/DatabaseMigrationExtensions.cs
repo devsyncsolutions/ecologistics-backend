@@ -1,9 +1,3 @@
-using Ecolgistics.NotificationsManagment.Infrastructure.Data;
-using Ecologistics.PickupManagement.Infrastructure.Data;
-using Ecologistics.TenantManagement.Infrastructure.Data;
-using EcoLogistics.UserManagement.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-
 namespace EcoLogistics.Host.Extensions;
 
 public static class DatabaseMigrationExtensions
