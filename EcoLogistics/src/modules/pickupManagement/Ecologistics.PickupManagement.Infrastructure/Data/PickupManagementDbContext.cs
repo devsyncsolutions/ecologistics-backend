@@ -14,6 +14,7 @@ public class PickupManagementDbContext :DbContext, IPickupManagementDbContext
     public DbSet<PickupFee> PickupFees => Set<PickupFee>();
     public DbSet<Pickup> Pickups => Set<Pickup>();
     public DbSet<PickupForQuery> PickupsForQuerying => Set<PickupForQuery>();
+    public DbSet<WasteKind> WasteKinds => Set<WasteKind>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

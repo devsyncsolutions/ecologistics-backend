@@ -19,7 +19,7 @@ namespace Ecologistics.PickupManagement.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
@@ -1202,6 +1202,119 @@ namespace Ecologistics.PickupManagement.Infrastructure.Data.Migrations
                     b.HasIndex("DistrictId", "WasteMeasurementId");
 
                     b.ToTable("PickupFees", (string)null);
+                });
+
+            modelBuilder.Entity("Ecologistics.PickupManagement.Domain.Commons.WasteKind", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("Name", "CreatedAt")
+                        .IsUnique();
+
+                    b.ToTable("WasteKinds", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440000"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Plastic",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Glass",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Paper",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Metal",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Organic",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "General",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        },
+                        new
+                        {
+                            Id = new Guid("233e4567-e89b-12d3-a456-426655440006"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            IsDeleted = false,
+                            Name = "Liquid",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 8, 6, 20, 22, 30, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "System"
+                        });
                 });
 
             modelBuilder.Entity("Ecologistics.PickupManagement.Domain.Commons.WasteMeasurement", b =>

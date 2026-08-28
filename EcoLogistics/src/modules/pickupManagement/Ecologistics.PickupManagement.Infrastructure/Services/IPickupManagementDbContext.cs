@@ -10,5 +10,6 @@ public interface IPickupManagementDbContext
     DbSet<PickupFee> PickupFees { get; }
     DbSet<Pickup> Pickups { get; }
     DbSet<PickupForQuery> PickupsForQuerying { get; }
+    DbSet<WasteKind> WasteKinds { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

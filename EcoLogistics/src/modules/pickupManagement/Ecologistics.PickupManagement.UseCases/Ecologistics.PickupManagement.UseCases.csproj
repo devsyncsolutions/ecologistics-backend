@@ -10,6 +10,7 @@
       <PackageReference Include="Carter" />
       <PackageReference Include="FluentValidation" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" />
+      <PackageReference Include="TickerQ" />
       <PackageReference Include="ZiggyCreatures.FusionCache" />
     </ItemGroup>
 
