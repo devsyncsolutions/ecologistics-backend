@@ -58,7 +58,7 @@ public class PickupJobTrackingHub : Hub
         // guard against divide-by-zero -> Infinity, same trap as before
         int? etaSeconds = avgSpeedMps > 0.3 // ~1 km/h floor, ignores GPS jitter while stationary
             ? (int)(remainingMeters / avgSpeedMps)
-            : null; // client shows "calculating..." instead of a bogus ETA
+            : null;
 
         await Clients.Group(GroupName(pickupJobId)).SendAsync("LocationUpdated",
             new

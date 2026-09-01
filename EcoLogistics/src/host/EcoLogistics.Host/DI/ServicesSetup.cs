@@ -48,7 +48,7 @@ internal static class ServicesSetup
         };
 
         builder.Services.AddSingleton(cloudinary);
-        builder.Services.AddSingleton<IProcessImagesService, ProcessImagesService>();
+        builder.Services.AddSingleton<IProcessFilesService, ProcessFilesService>();
     }
     private static void ConfigureTickerQ(WebApplicationBuilder builder)
     {
