@@ -17,7 +17,10 @@ public class UpdatePickupCommandHandler(
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        Pickup? pickup = await dbContext.Pickups.Where(p => p.Id == new PickupId(command.Id) && p.CreatedBy == loggedInUserService.GetUserId())
+        Pickup? pickup = await dbContext
+            .Pickups
+            .AsTracking()
+            .Where(p => p.Id == new PickupId(command.Id) && p.CreatedBy == loggedInUserService.GetUserId())
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -33,5 +36,7 @@ public class UpdatePickupCommandHandler(
                 : DateTimeOffset.Parse(command.ScheduledForPickupAt, CultureInfo.InvariantCulture),
             string.IsNullOrWhiteSpace(command.Priority) ? null : Enum.Parse<Priority>(command.Priority),
             command.WasteContentName);
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }
