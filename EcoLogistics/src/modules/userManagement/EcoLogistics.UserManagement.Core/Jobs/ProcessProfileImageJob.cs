@@ -8,7 +8,7 @@ namespace EcoLogistics.UserManagement.Core.Jobs;
 public record ProcessProfileImageJobRequest(string UserId, IFormFile Image);
 
 public class ProcessProfileImageJob(
-    IProcessImagesService processImagesService,
+    IProcessFilesService processFilesService,
     ILogger<ProcessProfileImageJob> logger,
     IUserManagementDbContext dbContext)
 {
@@ -18,9 +18,9 @@ public class ProcessProfileImageJob(
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(processImagesService);
+        ArgumentNullException.ThrowIfNull(processFilesService);
 
-        string? imageUrl = await processImagesService
+        string? imageUrl = await processFilesService
             .ProcessImageAsync(context.Request.Image, cancellationToken)
             .ConfigureAwait(false);
 

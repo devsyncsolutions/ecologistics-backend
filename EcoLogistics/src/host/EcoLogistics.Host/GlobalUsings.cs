@@ -4,12 +4,14 @@
 global using System.Diagnostics;
 global using System.Globalization;
 global using System.Net;
+global using System.Runtime.CompilerServices;
 global using System.Security.Claims;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using System.Threading.RateLimiting;
 global using Carter;
 global using CloudinaryDotNet;
+global using CloudinaryDotNet.Actions;
 global using Ecolgistics.NotificationsManagment.Infrastructure.Data;
 global using Ecolgistics.NotificationsManagment.Infrastructure.Services;
 global using Ecologistics.Common.Exceptions;

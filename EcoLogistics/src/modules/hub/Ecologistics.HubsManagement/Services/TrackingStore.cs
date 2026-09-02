@@ -12,10 +12,10 @@ public class TrackingStore(
     /// <summary>
     /// Gets the tracking state for the given job id. If it doesn't exist, it will be created.'
     /// </summary>
-    /// <param name="jobId"></param>
-    /// <param name="lat"></param>
-    /// <param name="lng"></param>
-    /// <returns></returns>
+    /// <param name="jobId">Guid</param>
+    /// <param name="lat">double</param>
+    /// <param name="lng">double</param>
+    /// <returns>PickupJobTrackingState</returns>
     public async Task<PickupJobTrackingState> GetOrInitAsync(Guid jobId, double lat, double lng)
     {
         MaybeValue<PickupJobTrackingState> existing = await cache.TryGetAsync<PickupJobTrackingState>(
@@ -42,7 +42,7 @@ public class TrackingStore(
     /// <param name="latitude"></param>
     /// <param name="longitude"></param>
     /// <param name="timestamp"></param>
-    /// <returns></returns>
+    /// <returns>double</returns>
     public async Task<double> UpdateSamplesAndGetAvgSpeedAsync(Guid pickupJobId, double latitude, double longitude,
         DateTimeOffset timestamp)
     {

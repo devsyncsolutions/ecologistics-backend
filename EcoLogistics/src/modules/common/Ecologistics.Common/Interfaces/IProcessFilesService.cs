@@ -3,7 +3,8 @@
 
 namespace Ecologistics.Common.Interfaces;
 
-public interface IProcessImagesService
+public interface IProcessFilesService
 {
     Task<string?> ProcessImageAsync(IFormFile file, CancellationToken cancellationToken);
+    Task<string?> ProcessPdfAsync(string fileName, byte[] file, CancellationToken cancellationToken);
 }

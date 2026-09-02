@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using NetTopologySuite.Geometries;
+
 namespace Ecologistics.PickupManagement.UseCases.GetPickupJobs;
 
 public class GetPickupJobsQueryHandler(
@@ -13,7 +15,7 @@ public class GetPickupJobsQueryHandler(
         ArgumentNullException.ThrowIfNull(query);
 
         var validation = new GetPickupJobsRequestValidator();
-        var validationResult = await validation.ValidateAsync(query, cancellationToken).ConfigureAwait(false);
+        ValidationResult validationResult = await validation.ValidateAsync(query, cancellationToken).ConfigureAwait(false);
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
@@ -37,9 +39,10 @@ public class GetPickupJobsQueryHandler(
         GetPickupJobsQuery query,
         CancellationToken cancellationToken)
     {
-        var origin = CreatePointCalculation.CreatePoint(query.Longitude, query.Latitude);
 
-        var dbQuery = dbContext
+        Point origin = CreatePointCalculation.CreatePoint(query.Longitude, query.Latitude);
+
+        IQueryable<PickupForQuery> dbQuery = dbContext
             .PickupsForQuerying
             .AsQueryable();
 
@@ -49,7 +52,7 @@ public class GetPickupJobsQueryHandler(
         if(!string.IsNullOrWhiteSpace(query.Priority))
             dbQuery = dbQuery.Where(q => q.Priority == query.Priority);
 
-        var list = dbQuery
+        IQueryable<PickupJobDto> list = dbQuery
             .Where(p => p.Coordinates.IsWithinDistance(origin, query.RadiusInMeters))
             .OrderBy(p => p.Coordinates.Distance(origin))
             .ThenBy(p => p.PickupId)
@@ -67,8 +70,8 @@ public class GetPickupJobsQueryHandler(
 
         int totalCount = await list.CountAsync(cancellationToken).ConfigureAwait(false);
 
-        var pageSize = query.PageSize <= 10 ? query.PageSize : 10;
-        var pagedResult = await list
+        int pageSize = query.PageSize <= 10 ? query.PageSize : 10;
+        List<PickupJobDto> pagedResult = await list
             .Skip((query.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken)
