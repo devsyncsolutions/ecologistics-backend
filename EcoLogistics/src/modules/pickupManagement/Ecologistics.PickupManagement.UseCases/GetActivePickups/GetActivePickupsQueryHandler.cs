@@ -23,11 +23,13 @@ public class GetActivePickupsQueryHandler(
 
         List<ActivePickupDto> activePickupJobs = await dbContext
             .Pickups
-            .Where(p => p.CreatedBy == userId && activeStatuses.Contains(p.PickupStatus))
+            .Where(p =>
+                p.CreatedBy == userId &&
+                activeStatuses.Contains(p.PickupStatus))
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new ActivePickupDto(
                 PickupId: p.Id.Value.ToString(),
-                ContentName: p.ContactName ?? string.Empty,
+                ContentName: p.WasteContentName,
 #pragma warning disable CA1305
                 StartedAt: p.TimeStamp.JobStartedAt.ToString()!))
             .ToListAsync(cancellationToken)

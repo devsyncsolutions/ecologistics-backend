@@ -7,10 +7,6 @@ public record TimeStamp
 {
     public TimeStamp(DateTimeOffset scheduledForPickupAt)
     {
-        // scheduledForPickupAt cannot be in the past.
-        if (scheduledForPickupAt < DateTimeOffset.UtcNow)
-            throw new BadRequestException("ScheduledAt cannot be in the past.");
-
         ScheduledForPickupAt = scheduledForPickupAt;
     }
 

@@ -69,6 +69,9 @@ internal sealed class CreateAPickupJobCommandValidator : AbstractValidator<Creat
             .WithMessage("Scheduled pickup date is required.")
             .Must(BeAValidDateAndTime).WithMessage("Scheduled pickup date must be a valid date and time.");
 
+        RuleFor(x => x.ScheduledForPickupAt)
+            .Must(IsNotInThePast).WithMessage("Scheduled pickup date cannot be in the past.");
+
         RuleFor(x => x.WasteContentName)
             .NotEmpty()
             .WithMessage("Waste content name is required.")
@@ -101,5 +104,12 @@ internal sealed class CreateAPickupJobCommandValidator : AbstractValidator<Creat
     {
         return !string.IsNullOrWhiteSpace(arg) &&
                DateTime.TryParseExact(arg, "yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+    }
+
+    private static bool IsNotInThePast(string? arg)
+    {
+        return !string.IsNullOrWhiteSpace(arg) &&
+               DateTime.TryParseExact(arg, "yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) &&
+               date > DateTime.UtcNow;
     }
 }

@@ -53,7 +53,8 @@ public class GetPickupJobsQueryHandler(
             dbQuery = dbQuery.Where(q => q.Priority == query.Priority);
 
         IQueryable<PickupJobDto> list = dbQuery
-            .Where(p => p.Coordinates.IsWithinDistance(origin, query.RadiusInMeters))
+            .Where(p =>
+                p.Coordinates.IsWithinDistance(origin, query.RadiusInMeters))
             .OrderBy(p => p.Coordinates.Distance(origin))
             .ThenBy(p => p.PickupId)
             .Select(p => new PickupJobDto(
