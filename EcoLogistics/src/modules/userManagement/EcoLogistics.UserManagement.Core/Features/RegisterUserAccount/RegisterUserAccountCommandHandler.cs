@@ -57,8 +57,8 @@ public class RegisterUserAccountCommandHandler(
             Gender = Enum.Parse<Gender>(command.Gender)
         };
 
-        string registeredUserId = await authenticationService.RegisterAsync(applicationUser, command.AccountType, cancellationToken).ConfigureAwait(false);
+        await authenticationService.RegisterAsync(applicationUser, command.AccountType, cancellationToken).ConfigureAwait(false);
 
-        return new RegisterUserAccountResponse(registeredUserId);
+        return new RegisterUserAccountResponse(command.PhoneNumber);
     }
 }

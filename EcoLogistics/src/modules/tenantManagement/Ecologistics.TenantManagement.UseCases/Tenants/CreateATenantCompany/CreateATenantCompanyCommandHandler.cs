@@ -31,21 +31,6 @@ public class CreateATenantCompanyCommandHandler(
         ILogger<CreateATenantCompanyCommandHandler> logger, CreateATenantCompanyCommand command,
         CancellationToken cancellationToken)
     {
-        bool companyNameAlreadyUsed = await dbContext
-            .Tenants
-            .IgnoreQueryFilters()
-            .AnyAsync(t =>
-#pragma warning disable CA1862
-#pragma warning disable CA1311
-                    t.CompanyName.ToLower() == command.CompanyName.ToLower(),
-#pragma warning restore CA1311
-#pragma warning restore CA1862
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (companyNameAlreadyUsed)
-            throw new BadRequestException("Company name already used.");
-
         List<CompanyPurposeId> companyPurposeIds = [];
 
         if (command.CompanyPurposes is not null)

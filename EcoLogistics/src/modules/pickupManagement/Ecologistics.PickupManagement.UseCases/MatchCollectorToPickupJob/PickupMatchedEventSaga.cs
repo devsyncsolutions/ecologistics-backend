@@ -55,7 +55,7 @@ public sealed class PickupMatchedEventSaga : Saga
         };
 
         var command = new RemoveMatchedJobFromQueryListCommand(
-            new PickupId(saga.Id),
+            saga.PickupId,
             @event.PickupReference,
             saga.Id,
             @event.TriggeredBy,

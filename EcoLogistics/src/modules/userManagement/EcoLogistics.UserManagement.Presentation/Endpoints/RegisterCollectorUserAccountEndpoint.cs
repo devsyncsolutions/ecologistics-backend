@@ -43,8 +43,7 @@ public sealed class RegisterCollectorUserAccountEndpoint : ICarterModule
             request.Gender,
             request.PhoneNumber,
             request.DistrictId,
-            AccountType.Collector);
-        command.RequestId = requestId;
+            AccountType.Collector) { RequestId = requestId };
 
         var result = await bus.InvokeAsync<RegisterUserAccountResponse>(command, cancellationToken).ConfigureAwait(false);
 

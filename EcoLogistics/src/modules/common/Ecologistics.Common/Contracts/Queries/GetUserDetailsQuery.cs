@@ -14,7 +14,7 @@ public record UserDetailsResponse(
     string LastName,
     string? OtherNames,
     string PhoneNumber,
-    string DateOfBirth,
+    string? DateOfBirth,
     string Gender,
     string ProfileImage,
     string Residence,
