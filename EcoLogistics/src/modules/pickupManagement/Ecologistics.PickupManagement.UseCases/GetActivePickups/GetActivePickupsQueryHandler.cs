@@ -31,7 +31,9 @@ public class GetActivePickupsQueryHandler(
                 PickupId: p.Id.Value.ToString(),
                 ContentName: p.WasteContentName,
 #pragma warning disable CA1305
-                StartedAt: p.TimeStamp.JobStartedAt.ToString()!))
+                StartedAt: p.TimeStamp.JobStartedAt.ToString()!,
+                Status: p.PickupStatus.ToString(),
+                Reference: p.Reference))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 #pragma warning restore CA1305

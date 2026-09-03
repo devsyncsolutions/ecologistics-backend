@@ -5,4 +5,9 @@ namespace Ecologistics.PickupManagement.UseCases.GetActivePickups;
 
 public record GetActivePickupsQuery;
 
-public record ActivePickupDto(string PickupId, string ContentName, string StartedAt);
+public record ActivePickupDto(
+    string PickupId,
+    string ContentName,
+    string StartedAt,
+    string Status,
+    string Reference);
