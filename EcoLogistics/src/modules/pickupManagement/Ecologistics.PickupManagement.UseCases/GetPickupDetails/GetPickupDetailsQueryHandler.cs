@@ -4,12 +4,32 @@
 namespace Ecologistics.PickupManagement.UseCases.GetPickupDetails;
 
 public class GetPickupDetailsQueryHandler(
-    IPickupManagementDbContext dbContext, ILoggedInUserService loggedInUserService)
+    IPickupManagementDbContext dbContext,
+    ILoggedInUserService loggedInUserService,
+    IMessageBus bus,
+    IFusionCache cache)
 {
     public async Task<PickupDetailsResponse> Handle(GetPickupDetailsQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        PickupDetailsResponse item = await cache.GetOrSetAsync(
+            CacheKeys.GetPickupDetailsKey(query.PickupId),
+            async _ => await FetchDetailsAsync(dbContext, loggedInUserService, bus, query, cancellationToken).ConfigureAwait(false),
+            new FusionCacheEntryOptions
+            {
+                Duration = TimeSpan.FromMinutes(30),
+                IsFailSafeEnabled = true,
+                FailSafeMaxDuration = TimeSpan.FromMinutes(35)
+            }, cancellationToken).ConfigureAwait(false);
+
+        return item;
+    }
+
+    private static async Task<PickupDetailsResponse> FetchDetailsAsync(IPickupManagementDbContext dbContext,
+        ILoggedInUserService loggedInUserService, IMessageBus bus, GetPickupDetailsQuery query,
+        CancellationToken cancellationToken)
+    {
         var pickup = await dbContext
             .Pickups
             .Where(p => p.Id == new PickupId(query.PickupId)
@@ -43,6 +63,7 @@ public class GetPickupDetailsQueryHandler(
                 p.Priority,
                 NextScheduledDate = p.RecurringProperties == null ? DateTimeOffset.MinValue : p.RecurringProperties.NextScheduledDate,
                 p.CreatedAt,
+                p.CreatedBy
             })
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -62,6 +83,14 @@ public class GetPickupDetailsQueryHandler(
                 pf.WasteMeasurement.Name
             })
             .FirstAsync(cancellationToken).ConfigureAwait(false);
+
+        UserDetailsResponse collector = await bus
+            .InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CollectorMemberId },
+                cancellationToken).ConfigureAwait(false);
+
+        UserDetailsResponse generator = await bus
+            .InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CreatedBy },
+                cancellationToken).ConfigureAwait(false);
 
 
         return new PickupDetailsResponse(
@@ -93,6 +122,12 @@ public class GetPickupDetailsQueryHandler(
             pickup.WasteContentName,
             pickup.Priority.ToString(),
             pickup.NextScheduledDate.ToString(CultureInfo.InvariantCulture),
-            pickup.CreatedAt.ToString(CultureInfo.InvariantCulture));
+            pickup.CreatedAt.ToString(CultureInfo.InvariantCulture),
+            pickup.CreatedBy ?? string.Empty,
+            pickup.Coordinates.X,
+            pickup.Coordinates.Y,
+            new UserDto(collector.PhoneNumber, $"{collector.FirstName} {collector.LastName}"),
+            new UserDto(generator.PhoneNumber, $"{generator.FirstName} {generator.LastName}")
+        );
     }
 }

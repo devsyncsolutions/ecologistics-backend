@@ -26,7 +26,12 @@ string Reference,
 string WasteContentName,
 string Priority,
 string? NextScheduledDate,
-string CreatedAt);
+string CreatedAt,
+string CreatedBy,
+double Longitude,
+double Latitude,
+UserDto Collector,
+UserDto Generator);
 public record TimeStamp(
     string ScheduledForPickupAt,
     string? JobStartedAt,
@@ -38,3 +43,5 @@ public record PickupFeeDto(
     int NumberOfContainers,
     string NameOfWeight,
     string Weight);
+
+public record UserDto(string PhoneNumber, string FullName);

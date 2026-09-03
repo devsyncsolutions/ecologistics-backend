@@ -38,4 +38,6 @@ public static class CacheKeys
     public static string GetWasteKinds => "WasteKinds";
 
     public static string MovePickupToProgress(Guid commandPickupJobId) => $"MovePickupToProgress:{commandPickupJobId}";
+
+    public static string GetPickupDetailsKey(Guid queryPickupId) => $"PickupDetails:{queryPickupId}";
 }
