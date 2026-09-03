@@ -18,9 +18,9 @@ public class GetPickupDetailsQueryHandler(
             async _ => await FetchDetailsAsync(dbContext, loggedInUserService, bus, query, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
-                Duration = TimeSpan.FromMinutes(30),
+                Duration = TimeSpan.FromHours(1),
                 IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromMinutes(35)
+                FailSafeMaxDuration = TimeSpan.FromHours(2)
             }, cancellationToken).ConfigureAwait(false);
 
         return item;
@@ -126,8 +126,8 @@ public class GetPickupDetailsQueryHandler(
             pickup.CreatedBy ?? string.Empty,
             pickup.Coordinates.X,
             pickup.Coordinates.Y,
-            new UserDto(collector.PhoneNumber, $"{collector.FirstName} {collector.LastName}"),
-            new UserDto(generator.PhoneNumber, $"{generator.FirstName} {generator.LastName}")
+            new UserDto(collector.PhoneNumber, $"{collector.FirstName} {collector.LastName}", collector.ProfileImage),
+            new UserDto(generator.PhoneNumber, $"{generator.FirstName} {generator.LastName}", generator.ProfileImage)
         );
     }
 }

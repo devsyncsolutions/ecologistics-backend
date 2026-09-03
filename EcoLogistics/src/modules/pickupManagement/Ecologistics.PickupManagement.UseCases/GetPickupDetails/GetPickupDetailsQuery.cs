@@ -44,4 +44,4 @@ public record PickupFeeDto(
     string NameOfWeight,
     string Weight);
 
-public record UserDto(string PhoneNumber, string FullName);
+public record UserDto(string PhoneNumber, string FullName, string ProfileImage);
