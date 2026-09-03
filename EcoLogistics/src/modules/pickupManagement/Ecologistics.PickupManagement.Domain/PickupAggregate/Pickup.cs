@@ -32,7 +32,10 @@ public class Pickup : BaseAggregate<PickupId>
         string reference, int daysIntervalForPickupIfRecurring, int numberOfContainers)
     {
         var point = CreatePointCalculation.CreatePoint(longitude, latitude);
-        var timeStamp = new TimeStamp(scheduledForPickupAt);
+        var timeStamp = new TimeStamp
+        {
+            ScheduledForPickupAt = scheduledForPickupAt
+        };
 
         var newPickup = new Pickup
         {
@@ -106,9 +109,7 @@ public class Pickup : BaseAggregate<PickupId>
             throw new ForbiddenRequestException("This pickup cannot be started by the user");
 
         PickupStatus = PickupStatus.Started;
-
-        var timeStamp = new TimeStamp(TimeStamp.ScheduledForPickupAt, DateTimeOffset.UtcNow);
-        TimeStamp = timeStamp;
+        TimeStamp.JobStartedAt = DateTimeOffset.UtcNow;
 
         AddDomainEvent(new PickupStartedEvent(Id, Reference, CreatedBy!, CollectorMemberId!, Type));
     }
@@ -146,9 +147,7 @@ public class Pickup : BaseAggregate<PickupId>
         }
 
         PickupStatus = PickupStatus.Completed;
-
-        var timeStamp = new TimeStamp(TimeStamp.ScheduledForPickupAt, TimeStamp.JobStartedAt, DateTimeOffset.UtcNow);
-        TimeStamp = timeStamp;
+        TimeStamp.JobCompletedAt = DateTimeOffset.UtcNow;
 
         AddDomainEvent(new PickupCompletedEvent(Id));
     }
@@ -204,7 +203,7 @@ public class Pickup : BaseAggregate<PickupId>
         ExtraNotes = extraNotes;
         Priority = priority ?? Priority;
         WasteContentName = wasteContentName ?? WasteContentName;
-        TimeStamp = scheduledForPickupAt is null ? TimeStamp : new TimeStamp(scheduledForPickupAt.Value);
+        TimeStamp.ScheduledForPickupAt = scheduledForPickupAt ?? TimeStamp.ScheduledForPickupAt;
 
         AddDomainEvent(new PickupUpdatedEvent(Id));
     }

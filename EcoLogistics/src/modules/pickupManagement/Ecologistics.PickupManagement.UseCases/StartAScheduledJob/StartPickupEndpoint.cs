@@ -32,7 +32,10 @@ public sealed class StartPickupEndpoint : ICarterModule
                 Title = "Bad Request"
             });
 
-        var command = new StartAScheduledJobCommand(pickupId);
+        var command = new StartAScheduledJobCommand(pickupId)
+        {
+            RequestId = requestId
+        };
         await bus.InvokeAsync(command, cancellationToken).ConfigureAwait(false);
 
         return Results.Ok();

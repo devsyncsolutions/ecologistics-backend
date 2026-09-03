@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Ecologistics.NotificationsManagment.UseCases.CreateANotification;
 
 public class CreateNotificationCommandHandler(
-    INotificationsManagementDbContext dbContext, 
+    INotificationsManagementDbContext dbContext,
     FirebaseMessaging firebaseMessaging,
     ILogger<CreateNotificationCommandHandler> logger)
 {
@@ -78,7 +78,7 @@ public class CreateNotificationCommandHandler(
         } catch(Exception ex)
         {
             logger.LogErrorMessage(
-                $"Error occured boadcasting notification with Firebase. Error: {ex.StackTrace!.ToString()}",
+                $"Error occured broadcasting notification with Firebase. Error: {ex.StackTrace!} - {ex.Message}",
                 null,
                 command.UserId,
                 null);
