@@ -8,9 +8,11 @@ public record GetPickupHistoryQuery(
 
 public record PickupHistoryDto(
     string PickupId,
+    string Reference,
     string WasteContentName,
     string Type,
     string CreatedAt,
+    string ScheduledForPickupAt,
     string Status);
 
 public sealed class GetPickupHistoryQueryValidator : AbstractValidator<GetPickupHistoryQuery>

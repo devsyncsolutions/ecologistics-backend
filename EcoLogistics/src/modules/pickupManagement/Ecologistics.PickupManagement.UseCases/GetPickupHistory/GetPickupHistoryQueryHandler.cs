@@ -60,10 +60,12 @@ public class GetPickupHistoryQueryHandler(IPickupManagementDbContext dbContext, 
             .Take(pageSize)
             .Select(p => new PickupHistoryDto(
                 PickupId: p.Id.Value.ToString(),
+                Reference: p.Reference,
                 WasteContentName: p.WasteContentName,
                 Type: p.Type.ToString(),
 #pragma warning disable CA1305
                 CreatedAt: p.CreatedAt.ToString(),
+                ScheduledForPickupAt: p.TimeStamp.ScheduledForPickupAt.ToString(),
 #pragma warning restore CA1305
                 Status: p.PickupStatus.ToString()))
             .ToListAsync(cancellationToken)
