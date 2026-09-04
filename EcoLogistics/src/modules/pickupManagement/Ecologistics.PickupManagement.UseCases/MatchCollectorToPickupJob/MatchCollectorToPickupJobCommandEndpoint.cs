@@ -11,6 +11,8 @@ public sealed class MatchCollectorToPickupJobCommandEndpoint : ICarterModule
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .RequireAuthorization(nameof(AccountType.Collector));
     }

@@ -28,6 +28,26 @@ public class MatchCollectorToPickupJobCommandHandler(
         CancellationToken cancellationToken
     )
     {
+        PickupStatus[] activeStatuses =
+        [
+            PickupStatus.Started,
+            PickupStatus.Matched,
+            PickupStatus.InProgress,
+            PickupStatus.CollectorEnRoute
+        ];
+
+        bool alreadyMatchedWithAnActiveJob = await dbContext
+            .Pickups
+            .AsTracking()
+            .Where(p =>
+                p.CollectorMemberId == loggedInUserService.GetUserId() &&
+                activeStatuses.Contains(p.PickupStatus))
+            .AnyAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (alreadyMatchedWithAnActiveJob)
+            throw new ForbiddenRequestException("You've already matched with an active job.");
+
         Pickup? existingPickupJob = await dbContext
             .Pickups
             .AsTracking()
