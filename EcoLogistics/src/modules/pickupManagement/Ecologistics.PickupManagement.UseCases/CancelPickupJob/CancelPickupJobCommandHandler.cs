@@ -31,7 +31,7 @@ public class CancelPickupJobCommandHandler(
         ILoggedInUserService loggedInUserService,
         CancellationToken cancellationToken)
     {
-        var pickup = await dbContext
+        Pickup? pickup = await dbContext
             .Pickups
             .AsTracking()
             .Where(p => p.Id == new PickupId(command.PickupId))

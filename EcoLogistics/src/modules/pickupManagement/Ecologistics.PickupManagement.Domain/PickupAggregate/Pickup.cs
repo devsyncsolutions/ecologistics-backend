@@ -149,7 +149,7 @@ public class Pickup : BaseAggregate<PickupId>
         PickupStatus = PickupStatus.Completed;
         TimeStamp.JobCompletedAt = DateTimeOffset.UtcNow;
 
-        AddDomainEvent(new PickupCompletedEvent(Id));
+        AddDomainEvent(new PickupCompletedEvent(Id, collectorMemberId, CreatedBy!, Reference));
     }
 
     public void Cancel(string reason, string cancelledBy)

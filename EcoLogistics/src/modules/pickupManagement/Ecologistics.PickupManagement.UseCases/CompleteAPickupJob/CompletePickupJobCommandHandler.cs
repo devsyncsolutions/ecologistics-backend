@@ -27,6 +27,7 @@ public class CompletePickupJobCommandHandler(
     private async Task<int> CompleteAsync(CompletePickupJobCommand command, CancellationToken cancellationToken)
     {
         Pickup? pickup = await dbContext.Pickups
+            .AsTracking()
             .Where(p => p.Id == new PickupId(command.PickupId))
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
