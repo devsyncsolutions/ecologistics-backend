@@ -30,7 +30,7 @@ string CreatedAt,
 string CreatedBy,
 double Longitude,
 double Latitude,
-UserDto Collector,
+UserDto? Collector,
 UserDto Generator);
 public record TimeStamp(
     string ScheduledForPickupAt,

@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Ecologistics.PickupManagement.UseCases.GetActivePickups;
+namespace Ecologistics.PickupManagement.UseCases.GetActivePickupAsCollector;
 
-public class GetActivePickupsQueryHandler(
+public record GetActivePickupAsCollectorQuery;
+
+public class GetActivePickupAsCollectorQueryHandler(
     IPickupManagementDbContext dbContext,
     ILoggedInUserService loggedInUserService)
 {
-    public async Task<IReadOnlyList<ActivePickupDto>> Handle(GetActivePickupsQuery query, CancellationToken cancellationToken)
+    public async Task<ActivePickupDto?> Handle(GetActivePickupAsCollectorQuery query,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -21,7 +24,7 @@ public class GetActivePickupsQueryHandler(
             PickupStatus.CollectorEnRoute
         ];
 
-        List<ActivePickupDto> activePickupJobs = await dbContext
+        var activeJob = await dbContext
             .Pickups
             .Where(p =>
                 p.CreatedBy == userId &&
@@ -34,10 +37,13 @@ public class GetActivePickupsQueryHandler(
                 StartedAt: p.TimeStamp.JobStartedAt.ToString()!,
                 Status: p.PickupStatus.ToString(),
                 Reference: p.Reference))
-            .ToListAsync(cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 #pragma warning restore CA1305
 
-        return activePickupJobs;
+        if(activeJob is null)
+            throw new NotFoundException($"No active pickup job found for collector with ID: {userId}");
+
+        return activeJob;
     }
 }

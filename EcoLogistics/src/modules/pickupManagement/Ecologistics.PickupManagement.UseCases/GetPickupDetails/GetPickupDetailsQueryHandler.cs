@@ -6,24 +6,14 @@ namespace Ecologistics.PickupManagement.UseCases.GetPickupDetails;
 public class GetPickupDetailsQueryHandler(
     IPickupManagementDbContext dbContext,
     ILoggedInUserService loggedInUserService,
-    IMessageBus bus,
-    IFusionCache cache)
+    IMessageBus bus)
 {
     public async Task<PickupDetailsResponse> Handle(GetPickupDetailsQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        PickupDetailsResponse item = await cache.GetOrSetAsync(
-            CacheKeys.GetPickupDetailsKey(query.PickupId),
-            async _ => await FetchDetailsAsync(dbContext, loggedInUserService, bus, query, cancellationToken).ConfigureAwait(false),
-            new FusionCacheEntryOptions
-            {
-                Duration = TimeSpan.FromHours(1),
-                IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromHours(2)
-            }, cancellationToken).ConfigureAwait(false);
-
-        return item;
+        return await FetchDetailsAsync(dbContext, loggedInUserService, bus, query, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static async Task<PickupDetailsResponse> FetchDetailsAsync(IPickupManagementDbContext dbContext,
@@ -84,9 +74,11 @@ public class GetPickupDetailsQueryHandler(
             })
             .FirstAsync(cancellationToken).ConfigureAwait(false);
 
-        UserDetailsResponse collector = await bus
-            .InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CollectorMemberId },
-                cancellationToken).ConfigureAwait(false);
+        UserDetailsResponse? collector = string.IsNullOrWhiteSpace(pickup.CollectorMemberId)
+            ? null
+            : await bus.InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CollectorMemberId },
+                cancellationToken)
+                .ConfigureAwait(false);
 
         UserDetailsResponse generator = await bus
             .InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CreatedBy },
@@ -126,7 +118,7 @@ public class GetPickupDetailsQueryHandler(
             pickup.CreatedBy ?? string.Empty,
             pickup.Coordinates.X,
             pickup.Coordinates.Y,
-            new UserDto(collector.PhoneNumber, $"{collector.FirstName} {collector.LastName}", collector.ProfileImage),
+            collector is null ? null : new UserDto(collector.PhoneNumber, $"{collector.FirstName} {collector.LastName}", collector.ProfileImage),
             new UserDto(generator.PhoneNumber, $"{generator.FirstName} {generator.LastName}", generator.ProfileImage)
         );
     }

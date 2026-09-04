@@ -22,6 +22,7 @@ global using Ecologistics.PickupManagement.Domain.PickupAggregate.Events;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate.ValueObjects;
 global using Ecologistics.PickupManagement.Infrastructure.Data;
 global using Ecologistics.PickupManagement.Infrastructure.Services;
+global using Ecologistics.PickupManagement.UseCases.GetActivePickupsAsGenerator;
 global using Ecologistics.PickupManagement.UseCases.Jobs;
 global using FluentValidation;
 global using FluentValidation.Results;
