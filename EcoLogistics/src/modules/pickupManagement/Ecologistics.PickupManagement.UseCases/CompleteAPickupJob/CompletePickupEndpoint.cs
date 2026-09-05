@@ -16,7 +16,7 @@ public sealed class CompletePickupEndpoint : ICarterModule
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireAuthorization(nameof(AccountType.Generator));
+            .RequireAuthorization(nameof(AccountType.Collector));
     }
 
     private static async Task<IResult> Handle(
