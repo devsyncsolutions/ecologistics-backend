@@ -46,7 +46,7 @@ public class MatchCollectorToPickupJobCommandHandler(
             .ConfigureAwait(false);
 
         if (alreadyMatchedWithAnActiveJob)
-            throw new ForbiddenRequestException("You've already matched with an active job.");
+            throw new ForbiddenRequestException("You are already matched with an active job.");
 
         Pickup? existingPickupJob = await dbContext
             .Pickups

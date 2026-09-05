@@ -9,7 +9,8 @@ public class GetActivePickupAsCollectorQueryHandler(
     IPickupManagementDbContext dbContext,
     ILoggedInUserService loggedInUserService)
 {
-    public async Task<ActivePickupDto?> Handle(GetActivePickupAsCollectorQuery query,
+    public async Task<ActivePickupDto?> Handle(
+        GetActivePickupAsCollectorQuery query,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
@@ -24,10 +25,10 @@ public class GetActivePickupAsCollectorQueryHandler(
             PickupStatus.CollectorEnRoute
         ];
 
-        var activeJob = await dbContext
+        ActivePickupDto? activeJob = await dbContext
             .Pickups
             .Where(p =>
-                p.CreatedBy == userId &&
+                p.CollectorMemberId == userId &&
                 activeStatuses.Contains(p.PickupStatus))
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new ActivePickupDto(
