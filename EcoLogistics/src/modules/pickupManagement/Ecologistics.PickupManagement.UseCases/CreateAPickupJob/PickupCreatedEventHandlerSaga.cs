@@ -13,7 +13,8 @@ public record PickupCreatedNotificationSent([property: SagaIdentity] Guid SagaId
 ///
 /// Flow:
 /// 1. Create a PickupForQuery entry in the database.
-/// 2. Send a message notifying the user that the pickup has been created.
+/// 2. Invalidate cache for the pickup.
+/// 3. Send a message notifying the user that the pickup has been created.
 /// </summary>
 public class PickupCreatedEventHandlerSaga : Saga
 {

@@ -25,6 +25,7 @@ global using EcoLogistics.Host.Utilities;
 global using Ecologistics.HubsManagement.DI;
 global using Ecologistics.NotificationsManagment.UseCases.DI;
 global using Ecologistics.NotificationsManagment.UseCases.GetNotifications;
+global using Ecologistics.PaymentManagment.Presentation.DI;
 global using Ecologistics.PickupManagement.Infrastructure.Data;
 global using Ecologistics.PickupManagement.Infrastructure.Services;
 global using Ecologistics.PickupManagement.UseCases.DI;

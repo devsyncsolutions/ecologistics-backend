@@ -1,15 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using Ecologistics.Common.Audits.SaveUpdateAudit;
-using Ecologistics.Common.Exceptions;
-using Ecologistics.Common.Interfaces;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Logging;
-using Wolverine;
-
 namespace Ecologistics.PickupManagement.Infrastructure.Data;
 
 public sealed class PickupManagementDbContextSaveChangesInterceptor : SaveChangesInterceptor
