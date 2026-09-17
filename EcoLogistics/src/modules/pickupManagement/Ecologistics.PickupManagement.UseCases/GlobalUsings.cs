@@ -33,7 +33,7 @@ global using Microsoft.AspNetCore.Routing;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
-global using Microsoft.Extensions.Logging;
+global using NetTopologySuite.Geometries;
 global using TickerQ.Utilities;
 global using TickerQ.Utilities.Base;
 global using TickerQ.Utilities.Entities;

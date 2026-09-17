@@ -3,7 +3,18 @@
 
 namespace Ecologistics.PickupManagement.UseCases.CreateAPickupJob;
 
-public record CreatPickupForQueryEntryCommand(Guid PickupId, Guid SagaId);
+public record CreatPickupForQueryEntryCommand(
+    Guid PickupId,
+    Guid SagaId,
+    string PickupReference,
+    string? ContactName,
+    string? FormattedAddress,
+    string Type,
+    string Priority,
+    Point Coordinates,
+    int NumberOfContainers,
+    Guid PickupFeeId,
+    string CreatedBy);
 public record PickupForQueryCreated([property: SagaIdentity] Guid SagaId, string PickupForQueryReference, string CreatedByUserId);
 public record SendPickupCreatedNotification(string CreatedByUserId, string PickupReference, Guid SagaId);
 public record PickupCreatedNotificationSent([property: SagaIdentity] Guid SagaId, string CreatedByUserId);
@@ -37,7 +48,18 @@ public class PickupCreatedEventHandlerSaga : Saga
             PickupId = @pickupCreatedEvent.Id.Value
         };
 
-        return (saga, new CreatPickupForQueryEntryCommand(@pickupCreatedEvent.Id.Value, saga.Id));
+        return (saga, new CreatPickupForQueryEntryCommand(
+            @pickupCreatedEvent.Id.Value,
+            saga.Id,
+            @pickupCreatedEvent.Reference,
+            @pickupCreatedEvent.ContactName,
+            @pickupCreatedEvent.FormattedAddress,
+            @pickupCreatedEvent.Type,
+            @pickupCreatedEvent.Priority,
+            @pickupCreatedEvent.Coordinates,
+            @pickupCreatedEvent.NumberOfContainers,
+            @pickupCreatedEvent.PickupFeeId.Value,
+            @pickupCreatedEvent.CreatedBy));
     }
 
     public SendPickupCreatedNotification Handle(PickupForQueryCreated @recordCreated)

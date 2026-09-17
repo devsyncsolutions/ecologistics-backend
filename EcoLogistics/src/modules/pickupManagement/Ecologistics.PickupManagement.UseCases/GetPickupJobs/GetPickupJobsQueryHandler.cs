@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NetTopologySuite.Geometries;
-
 namespace Ecologistics.PickupManagement.UseCases.GetPickupJobs;
 
 public class GetPickupJobsQueryHandler(
@@ -19,15 +17,15 @@ public class GetPickupJobsQueryHandler(
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        string cacheKey = CreatePointCalculation.BuildKey(query.Latitude, query.Longitude, query.RadiusInMeters, query.Page, query.PageSize);
+        string cacheKey = CreatePointCalculation.BuildKey(query.Latitude, query.Longitude, query.RadiusInMeters);
         PagedResponse<PickupJobDto> result = await cache.GetOrSetAsync(
             CacheKeys.GetPickupJobsKey(cacheKey),
             async _ => await FetchPickupJobsAsync(dbContext, query, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
-                Duration = TimeSpan.FromMinutes(10),
+                Duration = TimeSpan.FromMinutes(5),
                 IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromMinutes(15)
+                FailSafeMaxDuration = TimeSpan.FromMinutes(5)
             },
             cancellationToken).ConfigureAwait(false);
 

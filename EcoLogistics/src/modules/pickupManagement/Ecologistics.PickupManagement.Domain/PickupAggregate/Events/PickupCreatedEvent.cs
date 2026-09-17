@@ -3,4 +3,14 @@
 
 namespace Ecologistics.PickupManagement.Domain.PickupAggregate.Events;
 
-public record PickupCreatedEvent(PickupId Id) : IDomainEvents;
+public record PickupCreatedEvent(
+    PickupId Id,
+    string Reference,
+    string? ContactName,
+    string? FormattedAddress,
+    string Type,
+    string Priority,
+    Point Coordinates,
+    int NumberOfContainers,
+    PickupFeeId PickupFeeId,
+    string CreatedBy) : IDomainEvents;
