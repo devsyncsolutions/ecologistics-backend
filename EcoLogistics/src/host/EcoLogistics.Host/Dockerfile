@@ -23,7 +23,7 @@ COPY ["src/modules/userManagement/EcoLogistics.UserManagement.Presentation/EcoLo
 COPY ["src/modules/hub/Ecologistics.HubsManagement/Ecologistics.HubsManagement.csproj", "src/modules/hub/Ecologistics.HubsManagement/"]
 COPY ["src/modules/paymentManagement/Ecologistics.PaymentManagement.Infrastructure/Ecologistics.PaymentManagement.Infrastructure.csproj", "src/modules/paymentManagement/Ecologistics.PaymentManagement.Infrastructure/"]
 COPY ["src/modules/paymentManagement/Ecologistics.PaymentManagment.Core/Ecologistics.PaymentManagment.Core.csproj", "src/modules/paymentManagement/Ecologistics.PaymentManagment.Core/"]
-COPY ["src/modules/paymentManagement/Ecologistics.PaymentManagement.Presentation/Ecologistics.PaymentManagement.Presentation.csproj", "src/modules/paymentManagement/Ecologistics.PaymentManagement.Presentation/"]
+COPY ["src/modules/paymentManagement/Ecologistics.PaymentManagment.Presentation/Ecologistics.PaymentManagment.Presentation.csproj", "src/modules/paymentManagement/Ecologistics.PaymentManagment.Presentation/"]
 COPY ["Directory.Build.props", "./"]
 COPY [".editorconfig", "./"]
 COPY ["Directory.Packages.props", "./"]
