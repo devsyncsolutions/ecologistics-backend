@@ -12,9 +12,9 @@ public class PickupCompletedEventHandler(
         ArgumentNullException.ThrowIfNull(@event);
 
         UserDetailsResponse collector =
-            await bus.InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = @event.CollectorMemberId }, cancellationToken);
+            await bus.InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = @event.CollectorMemberId }, cancellationToken).ConfigureAwait(false);
         UserDetailsResponse generator =
-            await bus.InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = @event.CreatedBy }, cancellationToken);
+            await bus.InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = @event.CreatedBy }, cancellationToken).ConfigureAwait(false);
 
         const string messageTitle = "Pickup Completed";
 
