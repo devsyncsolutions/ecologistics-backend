@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using static Ecologistics.Common.Utilities.CacheKeys;
-
 namespace Ecologistics.PickupManagement.UseCases.CreateAPickupJob;
 
-public class CreatPickupForQueryEntryCommandHandler(
-    IPickupManagementDbContext dbContext,
-    IFusionCache cache)
+public class CreatPickupForQueryEntryCommandHandler(IPickupManagementDbContext dbContext)
 {
     public async Task<PickupForQueryCreated> Handle(CreatPickupForQueryEntryCommand command, CancellationToken cancellationToken)
     {
@@ -44,10 +40,6 @@ public class CreatPickupForQueryEntryCommandHandler(
 
         await dbContext.PickupsForQuerying.AddAsync(pickupForQuery, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        // invalidate cache
-        string cacheKey = CreatePointCalculation.BuildKey(pickupForQuery.Coordinates.Y, pickupForQuery.Coordinates.X, 50);
-        await cache.RemoveAsync(GetPickupJobsKey(cacheKey), null, cancellationToken).ConfigureAwait(false);
 
         return new PickupForQueryCreated(command.SagaId, pickupForQuery.Reference, command.CreatedBy);
     }

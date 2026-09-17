@@ -23,9 +23,9 @@ public class GetPickupJobsQueryHandler(
             async _ => await FetchPickupJobsAsync(dbContext, query, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
-                Duration = TimeSpan.FromMinutes(5),
+                Duration = TimeSpan.FromMinutes(1),
                 IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromMinutes(5)
+                FailSafeMaxDuration = TimeSpan.FromMinutes(1)
             },
             cancellationToken).ConfigureAwait(false);
 
@@ -47,7 +47,7 @@ public class GetPickupJobsQueryHandler(
         if (!string.IsNullOrWhiteSpace(query.Type))
             dbQuery = dbQuery.Where(q => q.Type == query.Type);
 
-        if(!string.IsNullOrWhiteSpace(query.Priority))
+        if (!string.IsNullOrWhiteSpace(query.Priority))
             dbQuery = dbQuery.Where(q => q.Priority == query.Priority);
 
         IQueryable<PickupJobDto> list = dbQuery
@@ -56,7 +56,7 @@ public class GetPickupJobsQueryHandler(
             .OrderBy(p => p.Coordinates.Distance(origin))
             .ThenBy(p => p.PickupId)
             .Select(p => new PickupJobDto(
-                PickupId:p.PickupId.ToString(),
+                PickupId: p.PickupId.ToString(),
                 Reference: p.Reference,
                 ContentName: p.ContentName,
                 FormattedAddress: p.FormattedAddress,
