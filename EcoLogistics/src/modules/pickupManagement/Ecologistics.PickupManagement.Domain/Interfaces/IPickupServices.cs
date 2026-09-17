@@ -6,4 +6,5 @@ namespace Ecologistics.PickupManagement.Domain.Interfaces;
 public interface IPickupServices
 {
     Task<string> GenerateReference(string formattedAddress, CancellationToken cancellationToken);
+    Task<(bool, string?)> IsEligibleToAcceptAPickup(CancellationToken cancellationToken);
 }

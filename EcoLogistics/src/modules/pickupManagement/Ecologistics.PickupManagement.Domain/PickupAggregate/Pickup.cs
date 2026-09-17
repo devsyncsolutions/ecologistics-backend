@@ -61,7 +61,17 @@ public class Pickup : BaseAggregate<PickupId>
             new RecurringProperties(daysIntervalForPickupIfRecurring, scheduledForPickupAt, newPickup.Id, true) :
             new RecurringProperties(1, scheduledForPickupAt, newPickup.Id, false);
 
-        newPickup.AddDomainEvent(new PickupCreatedEvent(newPickup.Id));
+        newPickup.AddDomainEvent(new PickupCreatedEvent(
+            newPickup.Id,
+            newPickup.Reference,
+            newPickup.ContactName,
+            newPickup.FormattedAddress,
+            newPickup.Type.ToString(),
+            newPickup.Priority.ToString(),
+            newPickup.Coordinates,
+            newPickup.NumberOfContainers,
+            newPickup.PickupFeeId,
+            newPickup.CreatedBy!));
 
         return newPickup;
     }

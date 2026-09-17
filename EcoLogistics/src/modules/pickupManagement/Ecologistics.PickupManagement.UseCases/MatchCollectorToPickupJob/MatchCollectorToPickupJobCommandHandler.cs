@@ -3,7 +3,8 @@ namespace Ecologistics.PickupManagement.UseCases.MatchCollectorToPickupJob;
 public class MatchCollectorToPickupJobCommandHandler(
     IPickupManagementDbContext dbContext,
     ILoggedInUserService loggedInUserService,
-    IFusionCache cache)
+    IFusionCache cache,
+    IPickupServices pickupServices)
 {
     public async Task Handle(MatchCollectorToPickupJobCommand command, CancellationToken cancellationToken)
     {
@@ -11,7 +12,9 @@ public class MatchCollectorToPickupJobCommandHandler(
 
         await cache.GetOrSetAsync<string>(
             CacheKeys.GetRequestKey<MatchCollectorToPickupJobCommand>(command.RequestId),
-            async _=> await MatchPickupAsync(dbContext, loggedInUserService, new PickupId(command.PickupJobId), cancellationToken).ConfigureAwait(false),
+            async _=> await MatchPickupAsync(dbContext, loggedInUserService, pickupServices, new PickupId(command.PickupJobId)
+                    , cancellationToken)
+                .ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromMinutes(30),
@@ -24,29 +27,15 @@ public class MatchCollectorToPickupJobCommandHandler(
     private static async Task<string> MatchPickupAsync(
         IPickupManagementDbContext dbContext,
         ILoggedInUserService loggedInUserService,
+        IPickupServices pickupServices,
         PickupId pickupId,
         CancellationToken cancellationToken
     )
     {
-        PickupStatus[] activeStatuses =
-        [
-            PickupStatus.Started,
-            PickupStatus.Matched,
-            PickupStatus.InProgress,
-            PickupStatus.CollectorEnRoute
-        ];
+        (bool isEligible, string? error) = await pickupServices.IsEligibleToAcceptAPickup(cancellationToken).ConfigureAwait(false);
 
-        bool alreadyMatchedWithAnActiveJob = await dbContext
-            .Pickups
-            .AsTracking()
-            .Where(p =>
-                p.CollectorMemberId == loggedInUserService.GetUserId() &&
-                activeStatuses.Contains(p.PickupStatus))
-            .AnyAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (alreadyMatchedWithAnActiveJob)
-            throw new ForbiddenRequestException("You are already matched with an active job.");
+        if (!isEligible)
+            throw new ForbiddenRequestException(error!);
 
         Pickup? existingPickupJob = await dbContext
             .Pickups

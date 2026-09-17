@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NetTopologySuite.Geometries;
-
 namespace Ecologistics.PickupManagement.UseCases.GetPickupJobs;
 
 public class GetPickupJobsQueryHandler(
@@ -19,15 +17,15 @@ public class GetPickupJobsQueryHandler(
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        string cacheKey = CreatePointCalculation.BuildKey(query.Latitude, query.Longitude, query.RadiusInMeters, query.Page, query.PageSize);
+        string cacheKey = CreatePointCalculation.BuildKey(query.Latitude, query.Longitude, query.RadiusInMeters);
         PagedResponse<PickupJobDto> result = await cache.GetOrSetAsync(
             CacheKeys.GetPickupJobsKey(cacheKey),
             async _ => await FetchPickupJobsAsync(dbContext, query, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
-                Duration = TimeSpan.FromMinutes(10),
+                Duration = TimeSpan.FromMinutes(1),
                 IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromMinutes(15)
+                FailSafeMaxDuration = TimeSpan.FromMinutes(1)
             },
             cancellationToken).ConfigureAwait(false);
 
@@ -49,7 +47,7 @@ public class GetPickupJobsQueryHandler(
         if (!string.IsNullOrWhiteSpace(query.Type))
             dbQuery = dbQuery.Where(q => q.Type == query.Type);
 
-        if(!string.IsNullOrWhiteSpace(query.Priority))
+        if (!string.IsNullOrWhiteSpace(query.Priority))
             dbQuery = dbQuery.Where(q => q.Priority == query.Priority);
 
         IQueryable<PickupJobDto> list = dbQuery
@@ -58,7 +56,7 @@ public class GetPickupJobsQueryHandler(
             .OrderBy(p => p.Coordinates.Distance(origin))
             .ThenBy(p => p.PickupId)
             .Select(p => new PickupJobDto(
-                PickupId:p.PickupId.ToString(),
+                PickupId: p.PickupId.ToString(),
                 Reference: p.Reference,
                 ContentName: p.ContentName,
                 FormattedAddress: p.FormattedAddress,

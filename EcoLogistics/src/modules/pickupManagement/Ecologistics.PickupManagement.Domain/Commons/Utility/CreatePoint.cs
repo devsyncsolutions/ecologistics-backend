@@ -15,12 +15,12 @@ public static class CreatePointCalculation
     // Precision 6 ≈ 610m × 610m if you want coarser buckets and higher hit rates.
     private const int GeohashPrecision = 7;
 
-    public static string BuildKey(double latitude, double longitude, double radiusMeters, int page, int pageSize)
+    public static string BuildKey(double latitude, double longitude, double radiusMeters)
     {
         string cell = NGeoHash.GeoHash.Encode(latitude, longitude, GeohashPrecision);
         double snappedRadius = SnapRadius(radiusMeters);
 
-        return $"available-pickups:{cell}:r{snappedRadius}:p{page}:s{pageSize}";
+        return $"available-pickups:{cell}:r{snappedRadius}";
     }
 
     // Snap arbitrary client-supplied radii to a fixed set of buckets,

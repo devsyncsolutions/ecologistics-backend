@@ -12,6 +12,7 @@ internal static class ServicesSetup
         builder.Services.AddPickupManagementServices(builder.Configuration);
         builder.Services.AddNotificationsManagementServices(builder.Configuration);
         builder.Services.AddHubsManagementServices();
+        builder.Services.AddPaymentManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
         ConfigureOpenTelemetry(builder);
