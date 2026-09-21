@@ -144,6 +144,8 @@ jobs:
               -e "OpenTelemetry__ServiceVersion=1.0.0" \
               -e "OpenTelemetry__OtelEndpoint=http://ecologistics-seq:5341/ingest/otlp" \
               -e "OpenTelemetry__ApiKey=${{ secrets.QA_TELEMETRY_KEY }}" \
+              -e "PayStack__BaseUrl=${{ secrets.QA_PAYSTACK_BASEURL }}" \
+              -e "PayStack__SecretKey=${{ secrets.QA_PAYSTACK_SecretKey }}" \
               "$IMAGE_REF"; then
               echo "❌ Failed to start container. Rolling back..."
               rm -f "$FIREBASE_CREDS_PATH"
