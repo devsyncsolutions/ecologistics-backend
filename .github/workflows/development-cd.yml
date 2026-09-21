@@ -57,7 +57,15 @@ jobs:
             IMAGE_TAG="${{ inputs['image-tag'] }}"
             IMAGE_REF="${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
             CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
-            FIREBASE_CREDS_PATH="/tmp/${CONTAINER_NAME}-firebase-creds.json"
+            FIREBASE_CREDS_PATH=$(mktemp "/tmp/${CONTAINER_NAME}-firebase-creds.XXXXXX")
+            cleanup_firebase_credentials() {
+              local exit_code=$?
+              if [ "$exit_code" -ne 0 ]; then
+                rm -f "$FIREBASE_CREDS_PATH"
+              fi
+              return "$exit_code"
+            }
+            trap cleanup_firebase_credentials EXIT
             PREVIOUS_IMAGE_ID=""
 
             if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
