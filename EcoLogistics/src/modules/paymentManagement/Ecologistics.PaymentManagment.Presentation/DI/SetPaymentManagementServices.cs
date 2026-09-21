@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Ecologistics.PaymentManagement.Core.Interfaces;
-
 namespace Ecologistics.PaymentManagment.Presentation.DI;
 
 public static class SetPaymentManagementServices
@@ -13,6 +11,7 @@ public static class SetPaymentManagementServices
         ArgumentNullException.ThrowIfNull(configuration);
 
         ConfigureDbContext(services, configuration);
+        ConfigurePayStackMessagingClient(services, configuration);
 
         services.AddScoped<PaymentManagementDbContextSaveChangesInterceptor>();
         services.AddScoped<IPaymentManagementDbContext, PaymentManagementDbContext>();
@@ -39,5 +38,32 @@ public static class SetPaymentManagementServices
                 .AddInterceptors(serviceProvider.GetRequiredService<PaymentManagementDbContextSaveChangesInterceptor>())
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
+    }
+
+    private static void ConfigurePayStackMessagingClient(IServiceCollection services, IConfiguration configuration)
+    {
+        string baseUrl = configuration["PayStack:BaseUrl"] ?? throw new InvalidOperationException("PayStack:BaseUrl not found");
+        string secretKey = configuration["PayStack:SecretKey"] ?? throw new InvalidOperationException("PayStack:SecretKey not found");
+
+        services.AddHttpClient("paystack", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {secretKey}");
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromSeconds(1);
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
+
+                options.Retry.ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .Handle<HttpRequestException>()
+                    .Handle<TimeoutRejectedException>()
+                    .HandleResult(result => result.StatusCode is >= HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout);
+
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
     }
 }

@@ -21,6 +21,9 @@ public class PickupJobTrackingHub : Hub
         if (string.IsNullOrWhiteSpace(userId))
             throw new HubException("You must be logged in to track a pickup job.");
 
+        if (!Context.User!.IsInRole(nameof(AccountType.Generator)))
+            throw new HubException("Only generators can track a pickup job.");
+
         bool isAuthorized = await _authService.CanTrackJob(pickupJobId, userId).ConfigureAwait(false);
 
         if (!isAuthorized)

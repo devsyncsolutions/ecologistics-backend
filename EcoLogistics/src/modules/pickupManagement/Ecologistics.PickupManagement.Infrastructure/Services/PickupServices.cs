@@ -5,7 +5,8 @@ namespace Ecologistics.PickupManagement.Infrastructure.Services;
 
 public class PickupServices(
     IPickupManagementDbContext dbContext,
-    ILoggedInUserService loggedInUserService) : IPickupServices
+    ILoggedInUserService loggedInUserService,
+    IMessageBus bus) : IPickupServices
 {
     public async Task<string> GenerateReference(string formattedAddress, CancellationToken cancellationToken)
     {
@@ -27,20 +28,22 @@ public class PickupServices(
 
     public async Task<(bool, string?)> IsEligibleToAcceptAPickup(CancellationToken cancellationToken)
     {
-        PickupStatus[] activeStatuses =
-        [
-            PickupStatus.Started,
-            PickupStatus.Matched,
-            PickupStatus.InProgress,
-            PickupStatus.CollectorEnRoute
-        ];
+        Task<decimal> districtTask = bus.InvokeAsync<decimal>(
+            new GetDistrictBalanceQuery(Guid.Parse(loggedInUserService.GetUserId())), cancellationToken);
+        Task<decimal> tenantTask = bus.InvokeAsync<decimal>(
+            new GetTenantBalanceQuery(), cancellationToken);
+
+        decimal balance = await districtTask.ConfigureAwait(false);
+        decimal tenantBalance = await tenantTask.ConfigureAwait(false);
+
+        if(tenantBalance > balance)
+            return (false, "Your tenant balance is above the least threshold to accept a pickup job. Please pay off your owned balance.");
 
         bool alreadyMatchedWithAnActiveJob = await dbContext
             .Pickups
-            .AsTracking()
             .Where(p =>
                 p.CollectorMemberId == loggedInUserService.GetUserId() &&
-                activeStatuses.Contains(p.PickupStatus))
+                ActiveStatuses.Contains(p.PickupStatus))
             .AnyAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -49,4 +52,12 @@ public class PickupServices(
 
         return (true, null);
     }
+
+    private static readonly PickupStatus[] ActiveStatuses =
+    [
+        PickupStatus.Started,
+        PickupStatus.Matched,
+        PickupStatus.InProgress,
+        PickupStatus.CollectorEnRoute
+    ];
 }

@@ -10,6 +10,7 @@ public sealed class PaymentManagementDbContext : DbContext, IPaymentManagementDb
     }
 
     public DbSet<BalanceThresholdPerDistrict> BalanceThresholdPerDistricts => Set<BalanceThresholdPerDistrict>();
+    public DbSet<UserPaymentMethod> UserPaymentMethods => Set<UserPaymentMethod>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

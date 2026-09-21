@@ -4,11 +4,11 @@
 global using System.Collections.ObjectModel;
 global using System.Globalization;
 global using Ecologistics.Common.Contracts.Queries;
+global using Ecologistics.Common.Enums;
 global using Ecologistics.Common.Utilities;
 global using Ecologistics.HubsManagement.Models;
 global using Ecologistics.HubsManagement.Services;
 global using Microsoft.AspNetCore.SignalR;
-global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Wolverine;
 global using ZiggyCreatures.Caching.Fusion;

@@ -3,6 +3,7 @@
 
 global using Ecologistics.Common.Contracts;
 global using Ecologistics.Common.Contracts.Commands;
+global using Ecologistics.Common.Contracts.Queries;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.Common.Interfaces;
 global using Ecologistics.Common.Utilities;
@@ -13,6 +14,7 @@ global using Ecologistics.TenantManagement.Domain.TenantAggregate.Enums;
 global using Ecologistics.TenantManagement.Domain.TenantAggregate.Events;
 global using Ecologistics.TenantManagement.UseCases.Interfaces;
 global using FluentValidation;
+global using FluentValidation.Results;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Logging;

@@ -15,14 +15,16 @@ public class MatchCollectorToPickupJobCommandHandler(
             async _=> await MatchPickupAsync(dbContext, loggedInUserService, pickupServices, new PickupId(command.PickupJobId)
                     , cancellationToken)
                 .ConfigureAwait(false),
-            new FusionCacheEntryOptions
-            {
-                Duration = TimeSpan.FromMinutes(30),
-                IsFailSafeEnabled = true,
-                FailSafeMaxDuration = TimeSpan.FromMinutes(30)
-            },
+            MatchJobCacheOptions,
             cancellationToken).ConfigureAwait(false);
     }
+
+    private static readonly FusionCacheEntryOptions MatchJobCacheOptions = new()
+    {
+        Duration = TimeSpan.FromMinutes(30),
+        IsFailSafeEnabled = true,
+        FailSafeMaxDuration = TimeSpan.FromMinutes(30)
+    };
 
     private static async Task<string> MatchPickupAsync(
         IPickupManagementDbContext dbContext,

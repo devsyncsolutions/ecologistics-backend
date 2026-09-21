@@ -9,17 +9,9 @@ public class RegisterUserAccountCommandHandler(
     public async Task<RegisterUserAccountResponse> Handle(RegisterUserAccountCommand command,
         CancellationToken cancellationToken)
     {
-        if(command is null)
-            throw new BadHttpRequestException("Command cannot be null", StatusCodes.Status400BadRequest);
+        ArgumentNullException.ThrowIfNull(command);
 
-        var validation = new RegisterUserAccountCommandValidator();
-        var validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
-        if (!validationResult.IsValid)
-        {
-            throw new ValidationException(validationResult.Errors);
-        }
-
-        var requestResponse = await cache.GetOrSetAsync(
+        RegisterUserAccountResponse requestResponse = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<RegisterUserAccountCommand>(command.RequestId),
             async _ => await RegisterUserAccountAsync(authenticationService, command, bus, cache,  cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
@@ -35,6 +27,13 @@ public class RegisterUserAccountCommandHandler(
         IFusionCache cache,
         CancellationToken cancellationToken)
     {
+        var validation = new RegisterUserAccountCommandValidator();
+        ValidationResult validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
+
         GetDistrictResponse existingDistrict = await bus
             .InvokeAsync<GetDistrictResponse>(new GetDistrictQuery(command.DistrictId), cancellationToken)
             .ConfigureAwait(false);
@@ -58,6 +57,9 @@ public class RegisterUserAccountCommandHandler(
         };
 
         await authenticationService.RegisterAsync(applicationUser, command.AccountType, cancellationToken).ConfigureAwait(false);
+
+        if (command.AccountType == AccountType.Generator)
+            await bus.PublishAsync(new AddCashPaymentMethodCommand(command.PhoneNumber)).ConfigureAwait(false);
 
         return new RegisterUserAccountResponse(command.PhoneNumber);
     }
