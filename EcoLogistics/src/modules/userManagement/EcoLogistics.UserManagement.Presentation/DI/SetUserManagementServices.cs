@@ -85,7 +85,9 @@ public static class SetUserManagementServices
                     OnMessageReceived = context =>
                     {
                         StringValues accessToken = context.Request.Query["access_token"];
-                        if(!string.IsNullOrWhiteSpace(accessToken) && context.Request.Path.StartsWithSegments("/hubs", StringComparison.OrdinalIgnoreCase))
+                        if(
+                            !string.IsNullOrWhiteSpace(accessToken) &&
+                            context.Request.Path.StartsWithSegments("/hubs", StringComparison.OrdinalIgnoreCase))
                         {
                             context.Token = accessToken;
                         }

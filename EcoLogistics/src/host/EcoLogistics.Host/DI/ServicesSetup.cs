@@ -84,6 +84,7 @@ internal static class ServicesSetup
             .AddDbContextCheck<PickupManagementDbContext>("PickupManagementDbContext", HealthStatus.Unhealthy)
             .AddDbContextCheck<NotificationsManagementDbContext>("NotificationsManagementDbContext", HealthStatus.Unhealthy)
             .AddDbContextCheck<TickerQDbContext>("TickerQDbContext", HealthStatus.Unhealthy)
+            .AddDbContextCheck<PaymentManagementDbContext>("PaymentManagementDbContext", HealthStatus.Unhealthy)
             .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
             .AddRabbitMQ(name: "RabbitMQ", failureStatus: HealthStatus.Unhealthy)
             .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "Redis",
@@ -201,10 +202,12 @@ internal static class ServicesSetup
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IPickupManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<INotificationsManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IPaymentManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(CreateATenantCompanyCommandHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetPickupJobsQueryHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetNotificationsQueryHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(GetDistrictBalanceQueryHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

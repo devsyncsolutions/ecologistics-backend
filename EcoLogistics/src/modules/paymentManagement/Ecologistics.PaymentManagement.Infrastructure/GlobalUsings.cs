@@ -8,6 +8,7 @@ global using Ecologistics.Common.Audits.SaveUpdateAudit;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.Common.Interfaces;
 global using Ecologistics.PaymentManagement.Core.Entities;
+global using Ecologistics.PaymentManagement.Core.Enums;
 global using Ecologistics.PaymentManagement.Core.Interfaces;
 global using Ecologistics.PaymentManagement.Core.ValueObjects;
 global using Microsoft.EntityFrameworkCore;

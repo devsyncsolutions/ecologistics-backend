@@ -6,20 +6,17 @@ namespace Ecologistics.TenantManagement.UseCases.Tenants.CreateATenantCompany;
 public class CreateATenantCompanyCommandHandler(
     ITenantManagementDbContext dbContext,
     ILogger<CreateATenantCompanyCommandHandler> logger,
-    IFusionCache cache)
+    IFusionCache cache,
+    IMessageBus bus)
 {
     public async Task<CreateATenantCompanyCommandResponse> Handle(CreateATenantCompanyCommand command,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var validation = new CreateATenantCompanyCommandValidator();
-        var validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
-        if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
-
-        var requestResponse =  await cache.GetOrSetAsync(
+        CreateATenantCompanyCommandResponse requestResponse =  await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<CreateATenantCompanyCommand>(command.RequestId),
-            async _ => await CreateTenantAsync(dbContext, logger, command, cancellationToken).ConfigureAwait(false),
+            async _ => await CreateTenantAsync(dbContext, logger, command, bus, cancellationToken).ConfigureAwait(false),
             TimeSpan.FromMinutes(30),
             cancellationToken).ConfigureAwait(false);
 
@@ -28,9 +25,15 @@ public class CreateATenantCompanyCommandHandler(
 
     private static async Task<CreateATenantCompanyCommandResponse> CreateTenantAsync(
         ITenantManagementDbContext dbContext,
-        ILogger<CreateATenantCompanyCommandHandler> logger, CreateATenantCompanyCommand command,
+        ILogger<CreateATenantCompanyCommandHandler> logger,
+        CreateATenantCompanyCommand command,
+        IMessageBus bus,
         CancellationToken cancellationToken)
     {
+        var validation = new CreateATenantCompanyCommandValidator();
+        ValidationResult validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
+        if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);
+
         List<CompanyPurposeId> companyPurposeIds = [];
 
         if (command.CompanyPurposes is not null)
@@ -69,6 +72,7 @@ public class CreateATenantCompanyCommandHandler(
 
         await dbContext.Tenants.AddAsync(newTenant, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await bus.PublishAsync(new AddCashPaymentMethodCommand(command.UserId)).ConfigureAwait(false);
 
         return new CreateATenantCompanyCommandResponse(newTenant.Id.Value.ToString());
     }

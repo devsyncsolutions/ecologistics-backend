@@ -6,5 +6,6 @@ namespace Ecologistics.PaymentManagement.Core.Interfaces;
 public interface IPaymentManagementDbContext
 {
     DbSet<BalanceThresholdPerDistrict> BalanceThresholdPerDistricts { get; }
+    DbSet<UserPaymentMethod> UserPaymentMethods { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

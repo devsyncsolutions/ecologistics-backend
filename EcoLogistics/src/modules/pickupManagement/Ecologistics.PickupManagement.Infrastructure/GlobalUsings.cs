@@ -6,6 +6,7 @@ global using System.Globalization;
 global using System.Linq.Expressions;
 global using Ecologistics.Common.Abstractions;
 global using Ecologistics.Common.Audits.SaveUpdateAudit;
+global using Ecologistics.Common.Contracts.Queries;
 global using Ecologistics.Common.Exceptions;
 global using Ecologistics.Common.Interfaces;
 global using Ecologistics.Common.Utilities;
