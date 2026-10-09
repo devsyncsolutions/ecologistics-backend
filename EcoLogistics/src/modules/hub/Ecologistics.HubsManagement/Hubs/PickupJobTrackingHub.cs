@@ -48,7 +48,7 @@ public class PickupJobTrackingHub : Hub
 
         PickupJobTrackingState state = await _trackingStore.GetOrInitAsync(pickupJobId, latitude, longitude).ConfigureAwait(false);
 
-        double remainingMeters = HaversineDistance(latitude, longitude, state.DistinationLat, state.DestinationLon);
+        double remainingMeters = GeoDistance.HaversineMeters(latitude, longitude, state.DistinationLat, state.DestinationLon);
 
         double percentage = state.InitialDistanceMeters <= 0
             ? 100
@@ -60,7 +60,7 @@ public class PickupJobTrackingHub : Hub
 
         // guard against divide-by-zero -> Infinity, same trap as before
         int? etaSeconds = avgSpeedMps > 0.3 // ~1 km/h floor, ignores GPS jitter while stationary
-            ? (int)(remainingMeters / avgSpeedMps)
+            ? (int)Math.Min(Math.Ceiling(remainingMeters / avgSpeedMps), int.MaxValue)
             : null;
 
         await Clients.Group(GroupName(pickupJobId)).SendAsync("LocationUpdated",
@@ -77,6 +77,4 @@ public class PickupJobTrackingHub : Hub
     }
 
     private static string GroupName(Guid pickupJobId) => $"PickupJobTracking-{pickupJobId}";
-    private static double HaversineDistance(double lat1, double lon1, double lat2, double lon2) =>
-        Math.Sqrt(Math.Pow(lat2 - lat1, 2) + Math.Pow(lon2 - lon1, 2)) * 6371;
 }

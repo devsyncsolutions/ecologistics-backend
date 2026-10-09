@@ -12,6 +12,7 @@ global using Ecologistics.TenantManagement.Domain.Commons.ValueObjects;
 global using Ecologistics.TenantManagement.Domain.TenantAggregate;
 global using Ecologistics.TenantManagement.Domain.TenantAggregate.Enums;
 global using Ecologistics.TenantManagement.Domain.TenantAggregate.Events;
+global using Ecologistics.TenantManagement.Domain.TenantAggregate.ValueObjects;
 global using Ecologistics.TenantManagement.UseCases.Interfaces;
 global using FluentValidation;
 global using FluentValidation.Results;

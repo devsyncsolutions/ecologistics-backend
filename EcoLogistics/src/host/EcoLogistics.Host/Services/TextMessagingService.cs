@@ -23,7 +23,7 @@ public class TextMessagingService(
 
         try
         {
-            HttpResponseMessage response = await http.PostAsJsonAsync($"/api/v2/sms/send", body, cancellationToken)
+            HttpResponseMessage response = await http.PostAsJsonAsync("/api/v2/sms/send", body, cancellationToken)
                 .ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode) return response.IsSuccessStatusCode;

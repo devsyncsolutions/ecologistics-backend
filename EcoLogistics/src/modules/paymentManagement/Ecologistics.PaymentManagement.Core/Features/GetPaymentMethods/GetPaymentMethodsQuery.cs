@@ -3,7 +3,7 @@
 
 namespace Ecologistics.PaymentManagement.Core.Features.GetPaymentMethods;
 
-public record GetPaymentMethodsQuery(AccountType AccountType);
+public record GetPaymentMethodsQuery;
 
 public record UserPaymentMethodDto(
     string Id,

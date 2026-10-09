@@ -10,6 +10,7 @@ public static class SetPaymentManagementServices
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        services.Configure<PaystackOptions>(configuration.GetSection("PayStack"));
         ConfigureDbContext(services, configuration);
         ConfigurePayStackMessagingClient(services, configuration);
 
@@ -39,16 +40,19 @@ public static class SetPaymentManagementServices
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
     }
-
     private static void ConfigurePayStackMessagingClient(IServiceCollection services, IConfiguration configuration)
     {
-        string baseUrl = configuration["PayStack:BaseUrl"] ?? throw new InvalidOperationException("PayStack:BaseUrl not found");
-        string secretKey = configuration["PayStack:SecretKey"] ?? throw new InvalidOperationException("PayStack:SecretKey not found");
+        PaystackOptions paystackOptions = configuration.GetSection("PayStack").Get<PaystackOptions>() ??
+                                          throw new InvalidOperationException("PayStack configuration section is missing or invalid.");
 
-        services.AddHttpClient("paystack", client =>
+        string baseUrl = paystackOptions.BaseUrl;
+        string secretKey = paystackOptions.SecretKey;
+        string sectionName = paystackOptions.SectionName;
+
+        services.AddHttpClient<IPaystackServices, PaystackServices>(sectionName, client =>
             {
                 client.BaseAddress = new Uri(baseUrl);
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {secretKey}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", secretKey);
             })
             .AddStandardResilienceHandler(options =>
             {

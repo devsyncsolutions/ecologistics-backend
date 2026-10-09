@@ -6,6 +6,7 @@ namespace Ecologistics.PickupManagement.UseCases.CompleteAPickupJob;
 public class CompletePickupJobCommandHandler(
     IPickupManagementDbContext dbContext,
     IFusionCache cache,
+    IMessageBus bus,
     ILoggedInUserService loggedInUserService)
 {
     public async Task Handle(CompletePickupJobCommand command, CancellationToken cancellationToken)
@@ -14,7 +15,7 @@ public class CompletePickupJobCommandHandler(
 
         await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<CompletePickupJobCommand>(command.RequestId),
-            async _ => await CompleteAsync(command, cancellationToken).ConfigureAwait(false),
+            async _ => await CompleteAsync(command, bus, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromMinutes(30),
@@ -24,7 +25,7 @@ public class CompletePickupJobCommandHandler(
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<int> CompleteAsync(CompletePickupJobCommand command, CancellationToken cancellationToken)
+    private async Task<int> CompleteAsync(CompletePickupJobCommand command, IMessageBus bus, CancellationToken cancellationToken)
     {
         Pickup? pickup = await dbContext.Pickups
             .AsTracking()
@@ -35,7 +36,12 @@ public class CompletePickupJobCommandHandler(
         if (pickup is null)
             throw new NotFoundException($"Pickup with Id {command.PickupId} was not found");
 
-        // check for payment status for the job before completing it
+        PaymentStatus paymentStatus = await bus.InvokeAsync<PaymentStatus>(
+            new GetPaymentStatusQuery(pickup.Id.Value), cancellationToken)
+            .ConfigureAwait(false);
+
+        if(paymentStatus is not (PaymentStatus.Success or PaymentStatus.CashConfirmed))
+            throw new BadHttpRequestException("Cannot complete pickup job. Payment status is not success");
 
         pickup.Complete(loggedInUserService.GetUserId());
         return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

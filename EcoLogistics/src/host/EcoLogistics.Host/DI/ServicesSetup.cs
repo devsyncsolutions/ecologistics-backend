@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Ecologistics.PaymentManagement.Core.Features.GetPaymentMethods;
+
 namespace EcoLogistics.Host.DI;
 
 internal static class ServicesSetup
@@ -111,6 +113,48 @@ internal static class ServicesSetup
                 document.Info.Title = "EcoLogistics API";
                 document.Info.Version = "v1";
                 document.Info.Description = "EcoLogistics API";
+                document.Info.Description = """
+                                            EcoLogistics API
+
+                                            ## Real-time pickup tracking
+
+                                            `PickupJobTrackingHub` is a SignalR hub available at
+                                            `/hubs/v1/pickup-job-tracking`. Connect using the SignalR protocol
+                                            and provide the same authentication required by the API.
+
+                                            ### Client-to-server methods
+
+                                            | Method | Parameters | Description |
+                                            | --- | --- | --- |
+                                            | `JoinPickupJobTracking` | `pickupJobId: UUID` | Adds a generator to the pickup-job tracking group. |
+                                            | `LeavePickupJobTracking` | `pickupJobId: UUID` | Removes the connection from the pickup-job tracking group. |
+                                            | `UpdateLocation` | `pickupJobId: UUID`, `latitude: number`, `longitude: number` | Publishes the collector's current location to the tracking group. |
+
+                                            `JoinPickupJobTracking` is restricted to generators. `UpdateLocation`
+                                            is restricted to the collector assigned to the pickup job.
+
+                                            ### Server-to-client events
+
+                                            #### `LocationUpdated`
+
+                                            Sent to members of the pickup-job tracking group after a successful
+                                            `UpdateLocation` call.
+
+                                            ```json
+                                            {
+                                              "pickupJobId": "00000000-0000-0000-0000-000000000000",
+                                              "latitude": 5.6037,
+                                              "longitude": -0.1870,
+                                              "percentageComplete": 42.5,
+                                              "remainingMeters": 1250,
+                                              "etaSeconds": 180,
+                                              "timeStamp": "2026-09-21 22:42:35"
+                                            }
+                                            ```
+
+                                            `etaSeconds` is `null` when the current average speed is too low
+                                            to produce a reliable estimate.
+                                            """;
 
                 return Task.CompletedTask;
             });
@@ -208,6 +252,7 @@ internal static class ServicesSetup
             options.Discovery.IncludeAssembly(typeof(GetPickupJobsQueryHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetNotificationsQueryHandler).Assembly);
             options.Discovery.IncludeAssembly(typeof(GetDistrictBalanceQueryHandler).Assembly);
+            options.Discovery.IncludeAssembly(typeof(GetPaymentMethodsQueryHandler).Assembly);
         });
     }
     private static void ConfigureFusionCache(WebApplicationBuilder builder)

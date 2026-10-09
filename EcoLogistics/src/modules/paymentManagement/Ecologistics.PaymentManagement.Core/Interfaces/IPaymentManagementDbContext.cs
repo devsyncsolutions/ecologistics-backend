@@ -7,5 +7,7 @@ public interface IPaymentManagementDbContext
 {
     DbSet<BalanceThresholdPerDistrict> BalanceThresholdPerDistricts { get; }
     DbSet<UserPaymentMethod> UserPaymentMethods { get; }
+    DbSet<PickupJobInvoice> PickupJobInvoices { get; }
+    DbSet<Payment> Payments { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

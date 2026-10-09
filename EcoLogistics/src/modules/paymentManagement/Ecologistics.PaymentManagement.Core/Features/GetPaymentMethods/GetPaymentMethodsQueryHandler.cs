@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+
 namespace Ecologistics.PaymentManagement.Core.Features.GetPaymentMethods;
 
 public class GetPaymentMethodsQueryHandler(
@@ -14,11 +15,12 @@ public class GetPaymentMethodsQueryHandler(
         ArgumentNullException.ThrowIfNull(query);
 
         string userId = loggedInUserService.GetUserId();
+        IReadOnlyCollection<string> roles = loggedInUserService.Roles();
         IEnumerable<UserPaymentMethodDto> results;
 
-        var innerQuery = dbContext.UserPaymentMethods.AsQueryable();
+        IQueryable<UserPaymentMethod> innerQuery = dbContext.UserPaymentMethods.AsQueryable();
 
-        if (query.AccountType == AccountType.Generator)
+        if (roles.Contains(nameof(AccountType.Generator)))
         {
             results = await innerQuery
                 .Where(pm => pm.CreatedBy == userId)

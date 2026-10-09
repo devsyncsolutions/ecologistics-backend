@@ -7,4 +7,13 @@ public interface IPickupServices
 {
     Task<string> GenerateReference(string formattedAddress, CancellationToken cancellationToken);
     Task<(bool, string?)> IsEligibleToAcceptAPickup(CancellationToken cancellationToken);
+    Task<List<PickupHistoryAsCollectorDto>> GetPickupHistoryAsCollector(
+        int page,
+        int pageSize,
+        PickupType? type,
+        Priority? priority,
+        string? wasteContentName,
+        DateTime fromDate,
+        DateTime toDate,
+        CancellationToken cancellationToken);
 }

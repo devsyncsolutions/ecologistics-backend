@@ -4,7 +4,7 @@
 namespace Ecologistics.PickupManagement.Infrastructure.Services;
 
 public class PickupServices(
-    IPickupManagementDbContext dbContext,
+    PickupManagementDbContext dbContext,
     ILoggedInUserService loggedInUserService,
     IMessageBus bus) : IPickupServices
 {
@@ -37,7 +37,7 @@ public class PickupServices(
         decimal tenantBalance = await tenantTask.ConfigureAwait(false);
 
         if(tenantBalance > balance)
-            return (false, "Your tenant balance is above the least threshold to accept a pickup job. Please pay off your owned balance.");
+            return (false, "Your tenant credit is above the least threshold to accept a pickup job. Please pay off your owned credit.");
 
         bool alreadyMatchedWithAnActiveJob = await dbContext
             .Pickups
@@ -51,6 +51,45 @@ public class PickupServices(
             return (false, "You are already matched with an active pickup job. Please complete it before accepting a new one.");
 
         return (true, null);
+    }
+
+    public async Task<List<PickupHistoryAsCollectorDto>> GetPickupHistoryAsCollector(int page, int pageSize,
+        PickupType? type, Priority? priority, string? wasteContentName,
+        DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
+    {
+        string collectorId = loggedInUserService.GetUserId();
+        const string completedStatus = nameof(PickupStatus.Completed);
+        string? typeStr = type?.ToString();
+        string? priorityStr = priority?.ToString();
+        int offset = (page - 1) * pageSize;
+
+        List<PickupHistoryAsCollectorDto> history = await dbContext.Database
+            .SqlQuery<PickupHistoryAsCollectorDto>(
+                $"""
+                SELECT
+                    CAST(p."Id" AS TEXT)            AS "PickupId",
+                    p."Reference",
+                    p."WasteContentName",
+                    CAST(p."JobCompletedAt" AS TEXT) AS "CompletedAt",
+                    pji."AmountPayable"             AS "Amount",
+                    pji."Commission"
+                FROM "Pickups" p
+                INNER JOIN "PickupJobInvoices" pji ON pji."AssociatedPickupId" = p."Id"
+                WHERE p."IsDeleted" = false
+                  AND p."CollectorMemberId" = {collectorId}
+                  AND p."PickupStatus" = {completedStatus}
+                  AND p."JobCompletedAt" >= {fromDate}
+                  AND p."JobCompletedAt" <= {toDate}
+                  AND ({typeStr} IS NULL OR p."Type" = {typeStr})
+                  AND ({priorityStr} IS NULL OR p."Priority" = {priorityStr})
+                  AND ({wasteContentName} IS NULL OR p."WasteContentName" ILIKE '%' || {wasteContentName} || '%')
+                ORDER BY p."JobCompletedAt" DESC
+                LIMIT {pageSize} OFFSET {offset}
+                """)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return history;
     }
 
     private static readonly PickupStatus[] ActiveStatuses =
