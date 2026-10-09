@@ -63,13 +63,11 @@ public class Tenant : BaseAggregate<TenantId>
             Status));
     }
 
-    public decimal UpdateTenantBalance(decimal amount)
+    public void UpdateTenantBalance(decimal amount)
     {
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
-
         TotalBalance += amount;
-        return TotalBalance;
     }
 
     public Uri UpdateTenantLogo(Uri? logoUrl)

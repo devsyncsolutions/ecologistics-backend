@@ -39,6 +39,8 @@ public class GeneratePickupJobInvoice(
             .InvokeAsync<UserDetailsResponse>(new GetUserDetailsQuery { UserId = pickup.CreatedBy }, cancellationToken)
             .ConfigureAwait(false);
 
+        decimal totalPrice = averageWeight.Amount * pickup.NumberOfContainers;
+
         byte[] invoice = GenerateInvoiceForPickupService.Generate(
             new GenerateInvoiceForPickupRequest(
                 PickupReference: pickup.Reference,
@@ -48,7 +50,7 @@ public class GeneratePickupJobInvoice(
                 TotalWeight: $"{averageWeight.AverageWeight *  pickup.NumberOfContainers} {averageWeight.UnitOfMeasurement}",
                 PricePerPackage: averageWeight.Amount,
                 PackageSize: averageWeight.Name,
-                TotalPrice:  averageWeight.Amount * pickup.NumberOfContainers,
+                TotalPrice:  totalPrice,
                 PickupDate: pickup.TimeStamp.ScheduledForPickupAt,
                 PaymentMethod: string.Empty,
                 CollectorFullName: $"{collector.FirstName} {collector.LastName}",
@@ -59,7 +61,12 @@ public class GeneratePickupJobInvoice(
             .ProcessPdfAsync(invoiceName, invoice, cancellationToken)
             .ConfigureAwait(false);
 
-        _ = pickup.UpdateInvoiceUrl(new Uri(invoiceUrl!));
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await bus
+            .InvokeAsync(
+                new AddAPickupInvoiceCommand(
+                    pickup.Id.Value, totalPrice,
+                    string.IsNullOrEmpty(invoiceUrl) ? null : new Uri(invoiceUrl),
+                    pickup.WasteContentName),
+                cancellationToken).ConfigureAwait(false);
     }
 }

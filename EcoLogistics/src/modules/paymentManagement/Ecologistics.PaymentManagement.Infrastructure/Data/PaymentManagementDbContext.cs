@@ -11,6 +11,8 @@ public sealed class PaymentManagementDbContext : DbContext, IPaymentManagementDb
 
     public DbSet<BalanceThresholdPerDistrict> BalanceThresholdPerDistricts => Set<BalanceThresholdPerDistrict>();
     public DbSet<UserPaymentMethod> UserPaymentMethods => Set<UserPaymentMethod>();
+    public DbSet<PickupJobInvoice> PickupJobInvoices => Set<PickupJobInvoice>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

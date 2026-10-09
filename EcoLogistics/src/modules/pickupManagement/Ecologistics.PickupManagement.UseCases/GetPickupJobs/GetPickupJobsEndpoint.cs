@@ -29,7 +29,7 @@ public sealed class GetPickupJobsEndpoint : ICarterModule
         CancellationToken cancellationToken = default)
     {
         var query = new GetPickupJobsQuery(page, pageSize, type, priority, latitude, longitude, radiusInMeters);
-        var result = await bus.InvokeAsync<PagedResponse<PickupJobDto>>(query, cancellationToken).ConfigureAwait(false);
+        PagedResponse<PickupJobDto> result = await bus.InvokeAsync<PagedResponse<PickupJobDto>>(query, cancellationToken).ConfigureAwait(false);
         return Results.Ok(result);
     }
 }

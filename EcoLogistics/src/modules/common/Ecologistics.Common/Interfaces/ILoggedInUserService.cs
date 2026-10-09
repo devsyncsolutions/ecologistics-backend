@@ -7,4 +7,5 @@ public interface ILoggedInUserService
 {
     string GetUserId();
     string GetDistrictId();
+    IReadOnlyCollection<string> Roles();
 }

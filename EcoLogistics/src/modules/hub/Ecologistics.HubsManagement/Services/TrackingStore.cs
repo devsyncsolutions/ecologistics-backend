@@ -24,14 +24,15 @@ public class TrackingStore(
 
         (double destLat, double destLng) = await bus.InvokeAsync<(double, double)>(new PickupDestinationLookupQuery(jobId))
             .ConfigureAwait(false);
-        double initialDistance = HaversineDistanceMeters(lat, lng, destLat, destLng);
+        double initialDistance = GeoDistance.HaversineMeters(lat, lng, destLat, destLng);
 
         var state = new PickupJobTrackingState(destLat, destLng, initialDistance,
             [new LocationSample(lat, lng, DateTimeOffset.UtcNow)]);
 
-        await cache.SetAsync(CacheKeys.StateKey(jobId), state,
-            new FusionCacheEntryOptions { Duration = s_trackingTtl })
-            .ConfigureAwait(false);
+        ValueTask setCacheTask =  cache.SetAsync(CacheKeys.StateKey(jobId), state, new FusionCacheEntryOptions { Duration = s_trackingTtl });
+        ValueTask publishTask = bus.PublishAsync(new MovePickupJobToProgressCommand(jobId));
+        await Task.WhenAll(setCacheTask.AsTask(), publishTask.AsTask()).ConfigureAwait(false);
+
         return state;
     }
 
@@ -94,25 +95,10 @@ public class TrackingStore(
             if (elapsedSeconds <= 0)
                 continue;
 
-            totalDistance += HaversineDistanceMeters(prev.Lat, prev.Lon, curr.Lat, curr.Lon);
+            totalDistance += GeoDistance.HaversineMeters(prev.Lat, prev.Lon, curr.Lat, curr.Lon);
             totalSeconds += elapsedSeconds;
         }
 
         return totalSeconds > 0 ? totalDistance / totalSeconds : 0;
     }
-    private static double HaversineDistanceMeters(double lat1, double lon1, double lat2, double lon2)
-    {
-        const double earthRadiusMeters = 6371000;
-
-        double dLat = ToRadians(lat2 - lat1);
-        double dLon = ToRadians(lon2 - lon1);
-
-        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                   Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return earthRadiusMeters * c;
-    }
-    private static double ToRadians(double degrees) => degrees * Math.PI / 180;
 }

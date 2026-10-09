@@ -15,6 +15,7 @@ global using Ecologistics.PickupManagement.Domain.Commons;
 global using Ecologistics.PickupManagement.Domain.Commons.Enums;
 global using Ecologistics.PickupManagement.Domain.Commons.Utility;
 global using Ecologistics.PickupManagement.Domain.Commons.ValueObjects;
+global using Ecologistics.PickupManagement.Domain.Dtos;
 global using Ecologistics.PickupManagement.Domain.Interfaces;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate;
 global using Ecologistics.PickupManagement.Domain.PickupAggregate.Enums;

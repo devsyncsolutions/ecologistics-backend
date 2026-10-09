@@ -11,8 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Http" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
       <PackageReference Include="WolverineFx" />
+      <PackageReference Include="WolverineFx.EntityFrameworkCore" />
     </ItemGroup>
 
     <ItemGroup>

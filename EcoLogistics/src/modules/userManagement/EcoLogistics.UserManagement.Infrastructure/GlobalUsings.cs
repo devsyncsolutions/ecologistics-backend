@@ -5,6 +5,7 @@ global using System.Linq.Expressions;
 global using System.Reflection;
 global using System.Security.Claims;
 global using Ecologistics.Common.Abstractions;
+global using Ecologistics.Common.Interfaces;
 global using EcoLogistics.UserManagement.Core.Enums;
 global using EcoLogistics.UserManagement.Core.Interfaces;
 global using EcoLogistics.UserManagement.Core.Models;

@@ -7,7 +7,7 @@ public enum PaymentMethodType
 {
     CreditCard,
     Cash,
-    MobileMoney,
+    MtnMobileMoney,
     AirtelTigoCash,
     VodafoneCash
 }

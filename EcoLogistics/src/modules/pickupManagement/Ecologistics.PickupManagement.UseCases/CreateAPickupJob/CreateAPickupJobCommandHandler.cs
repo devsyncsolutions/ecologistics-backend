@@ -14,11 +14,6 @@ public class CreateAPickupJobCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var validation = new CreateAPickupJobCommandValidator();
-        var validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
-        if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
-
         Guid newPickupId = await cache.GetOrSetAsync(
             CacheKeys.GetRequestKey<CreateAPickupJobCommand>(command.RequestId),
             async _ => await CreateNewPickupAsync(dbContext, loggedInUserService, pickupServices, command, cancellationToken).ConfigureAwait(false),
@@ -40,6 +35,11 @@ public class CreateAPickupJobCommandHandler(
         CreateAPickupJobCommand command,
         CancellationToken cancellationToken)
     {
+        var validation = new CreateAPickupJobCommandValidator();
+        ValidationResult validationResult = await validation.ValidateAsync(command, cancellationToken).ConfigureAwait(false);
+        if (!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+
         // Restrict the number of uncompleted jobs to be created in code
         // move to settings table later
         int numberOfActiveJobs = await dbContext.Pickups
