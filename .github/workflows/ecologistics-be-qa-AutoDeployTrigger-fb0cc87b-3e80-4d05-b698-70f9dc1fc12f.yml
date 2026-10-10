@@ -1,27 +1,30 @@
 name: Trigger auto deployment for ecologistics-be-qa
 
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
-  push:
-    branches: 
-      [ develoment ]
-    paths:
-    - '**'
-    - '.github/workflows/ecologistics-be-qa-AutoDeployTrigger-fb0cc87b-3e80-4d05-b698-70f9dc1fc12f.yml'
-
-  # Allow manual trigger 
+  workflow_run:
+    workflows:
+      - Development CI
+    types:
+      - completed
+    branches:
+      - develoment
   workflow_dispatch:
-      
+    inputs:
+      image-tag:
+        description: "Docker image tag to deploy (commit SHA or latest)"
+        required: false
+        default: latest
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment: staging
+    env:
+      IMAGE_TAG: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || inputs['image-tag'] || 'latest' }}
+      DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/ecologistics-be
 
     steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v2
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -84,18 +87,15 @@ jobs:
               "qa-paystack-secretkey=$QA_PAYSTACK_SECRETKEY" \
               "firebase-credentials=$FIREBASE_JSON"
 
-      - name: Build and push container image to registry
+      - name: Deploy CI-built image to Azure Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
-          _targetLabelKey_: _targetLabel_
           registryUrl: docker.io
           registryUsername: ${{ secrets.ECOLOGISTICSBEQA_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.ECOLOGISTICSBEQA_REGISTRY_PASSWORD }}
           containerAppName: ecologistics-be-qa
           resourceGroup: DefaultResourceGroup-SUK
-          imageToBuild: devsyncinc/devsyncinc/ecologistics-be:${{ github.sha }}
+          imageToDeploy: ${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
 
       - name: Configure QA container environment and Firebase file mount
         env:
