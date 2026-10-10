@@ -17,8 +17,11 @@ internal static class ServicesSetup
         builder.Services.AddPaymentManagementServices(builder.Configuration);
 
         ConfigureOpenApiDocumentation(builder);
-        ConfigureOpenTelemetry(builder);
+
+#pragma warning disable S125 // Sections of code should not be commented out
+        //ConfigureOpenTelemetry(builder);
         ConfigureArkesselMessagingClient(builder);
+#pragma warning restore S125 // Sections of code should not be commented out
         ConfigureUtilities(builder);
         ConfigureWolverine(builder);
         ConfigureFusionCache(builder);
@@ -356,7 +359,9 @@ internal static class ServicesSetup
             };
         });
     }
+#pragma warning disable S1144 // Unused private types or members should be removed
     private static void ConfigureOpenTelemetry(WebApplicationBuilder builder)
+#pragma warning restore S1144 // Unused private types or members should be removed
     {
         string serviceName = builder.Configuration["OpenTelemetry:ServiceName"] ?? "EcoLogistics.Api";
         string serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";

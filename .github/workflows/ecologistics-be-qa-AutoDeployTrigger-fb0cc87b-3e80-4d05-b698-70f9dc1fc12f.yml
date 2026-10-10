@@ -16,6 +16,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: staging
 
     steps:
       - name: Checkout to the branch
@@ -25,6 +26,63 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.ECOLOGISTICSBEQA_AZURE_CREDENTIALS }}
+
+      - name: Configure QA secrets in Azure Container Apps
+        env:
+          QA_DB_CONNECTION_STRING: ${{ secrets.QA_DB_CONNECTION_STRING }}
+          QA_REDIS_CONNECTION_STRING: ${{ secrets.QA_REDIS_CONNECTION_STRING }}
+          QA_RABBITMQ_CONNECTION_STRING: ${{ secrets.QA_RABBITMQ_CONNECTION_STRING }}
+          QA_SENTRY_DSN: ${{ secrets.QA_SENTRY_DSN }}
+          QA_ARKESSEL_APIKEY: ${{ secrets.QA_ARKESSEL_APIKEY }}
+          QA_ARKESSEL_BASEURL: ${{ secrets.QA_ARKESSEL_BASEURL }}
+          QA_ARKESSEL_SENDERID: ${{ secrets.QA_ARKESSEL_SENDERID }}
+          QA_JWTSETTINGS_KEY: ${{ secrets.QA_JWTSETTINGS_KEY }}
+          QA_JWTSETTINGS_ISSUER: ${{ secrets.QA_JWTSETTINGS_ISSUER }}
+          QA_JWTSETTINGS_AUDIENCE: ${{ secrets.QA_JWTSETTINGS_AUDIENCE }}
+          QA_JWTSETTINGS_ACCESSTOKENEXPIRATIONMINUTES: ${{ secrets.QA_JWTSETTINGS_ACCESSTOKENEXPIRATIONMINUTES }}
+          QA_JWTSETTINGS_REFRESHTOKENEXPIRATIONDAYS: ${{ secrets.QA_JWTSETTINGS_REFRESHTOKENEXPIRATIONDAYS }}
+          QA_TICKERQ_DASHBOARD_USERNAME: ${{ secrets.QA_TICKERQ_DASHBOARD_USERNAME }}
+          QA_TICKERQ_DASHBOARD_PASSWORD: ${{ secrets.QA_TICKERQ_DASHBOARD_PASSWORD }}
+          QA_CLOUDINARY_CLOUDNAME: ${{ secrets.QA_CLOUDINARY_CLOUDNAME }}
+          QA_CLOUDINARY_APIKEY: ${{ secrets.QA_CLOUDINARY_APIKEY }}
+          QA_CLOUDINARY_APISECRET: ${{ secrets.QA_CLOUDINARY_APISECRET }}
+          QA_CORS_ALLOWEDORIGINS: ${{ secrets.QA_CORS_ALLOWEDORIGINS }}
+          QA_TELEMETRY_KEY: ${{ secrets.QA_TELEMETRY_KEY }}
+          QA_PAYSTACK_BASEURL: ${{ secrets.QA_PAYSTACK_BASEURL }}
+          QA_PAYSTACK_SECRETKEY: ${{ secrets.QA_PAYSTACK_SECRETKEY }}
+          QA_FIREBASE_CREDENTIALS: ${{ secrets.QA_FIREBASE_CREDENTIALS }}
+        run: |
+          set -euo pipefail
+
+          FIREBASE_JSON="$(printf '%s' "$QA_FIREBASE_CREDENTIALS" | base64 --decode)"
+          printf '%s' "$FIREBASE_JSON" | jq -e 'type == "object"' > /dev/null
+
+          az containerapp secret set \
+            --name ecologistics-be-qa \
+            --resource-group DefaultResourceGroup-SUK \
+            --secrets \
+              "qa-db-connection=$QA_DB_CONNECTION_STRING" \
+              "qa-redis-connection=$QA_REDIS_CONNECTION_STRING" \
+              "qa-rabbitmq-connection=$QA_RABBITMQ_CONNECTION_STRING" \
+              "qa-sentry-dsn=$QA_SENTRY_DSN" \
+              "qa-arkessel-apikey=$QA_ARKESSEL_APIKEY" \
+              "qa-arkessel-baseurl=$QA_ARKESSEL_BASEURL" \
+              "qa-arkessel-senderid=$QA_ARKESSEL_SENDERID" \
+              "qa-jwtsettings-key=$QA_JWTSETTINGS_KEY" \
+              "qa-jwtsettings-issuer=$QA_JWTSETTINGS_ISSUER" \
+              "qa-jwtsettings-audience=$QA_JWTSETTINGS_AUDIENCE" \
+              "qa-jwtsettings-accesstokenexpirationminutes=$QA_JWTSETTINGS_ACCESSTOKENEXPIRATIONMINUTES" \
+              "qa-jwtsettings-refreshtokenexpirationdays=$QA_JWTSETTINGS_REFRESHTOKENEXPIRATIONDAYS" \
+              "qa-tickerq-dashboard-username=$QA_TICKERQ_DASHBOARD_USERNAME" \
+              "qa-tickerq-dashboard-password=$QA_TICKERQ_DASHBOARD_PASSWORD" \
+              "qa-cloudinary-cloudname=$QA_CLOUDINARY_CLOUDNAME" \
+              "qa-cloudinary-apikey=$QA_CLOUDINARY_APIKEY" \
+              "qa-cloudinary-apisecret=$QA_CLOUDINARY_APISECRET" \
+              "qa-cors-allowedorigins=$QA_CORS_ALLOWEDORIGINS" \
+              "qa-telemetry-key=$QA_TELEMETRY_KEY" \
+              "qa-paystack-baseurl=$QA_PAYSTACK_BASEURL" \
+              "qa-paystack-secretkey=$QA_PAYSTACK_SECRETKEY" \
+              "firebase-credentials=$FIREBASE_JSON"
 
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v2
@@ -38,8 +96,87 @@ jobs:
           containerAppName: ecologistics-be-qa
           resourceGroup: DefaultResourceGroup-SUK
           imageToBuild: devsyncinc/devsyncinc/ecologistics-be:${{ github.sha }}
-          
-            
 
-     
+      - name: Configure QA container environment and Firebase file mount
+        env:
+          CONTAINER_APP_NAME: ecologistics-be-qa
+          RESOURCE_GROUP: DefaultResourceGroup-SUK
+        run: |
+          set -euo pipefail
+          APP_SPEC="$RUNNER_TEMP/container-app.yaml"
 
+          az containerapp show \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --output yaml > "$APP_SPEC"
+
+          ruby -ryaml - "$APP_SPEC" <<'RUBY'
+          path = ARGV.fetch(0)
+          app = YAML.safe_load_file(path, aliases: true)
+          properties = app.fetch("properties")
+          template = properties.fetch("template")
+          containers = template.fetch("containers")
+          container = containers.find { |item| item["name"] == "ecologistics-be-qa" } || containers.first
+
+          secret_env_vars = {
+            "ConnectionStrings__DefaultConnection" => "qa-db-connection",
+            "ConnectionStrings__RedisConnection" => "qa-redis-connection",
+            "ConnectionStrings__RabbitMQConnection" => "qa-rabbitmq-connection",
+            "Sentry__Dsn" => "qa-sentry-dsn",
+            "Arkessel__ApiKey" => "qa-arkessel-apikey",
+            "Arkessel__BaseUrl" => "qa-arkessel-baseurl",
+            "Arkessel__SenderId" => "qa-arkessel-senderid",
+            "JwtSettings__Key" => "qa-jwtsettings-key",
+            "JwtSettings__Issuer" => "qa-jwtsettings-issuer",
+            "JwtSettings__Audience" => "qa-jwtsettings-audience",
+            "JwtSettings__AccessTokenExpirationMinutes" => "qa-jwtsettings-accesstokenexpirationminutes",
+            "JwtSettings__RefreshTokenExpirationDays" => "qa-jwtsettings-refreshtokenexpirationdays",
+            "TickerQ__Dashboard__Username" => "qa-tickerq-dashboard-username",
+            "TickerQ__Dashboard__Password" => "qa-tickerq-dashboard-password",
+            "Cloudinary__CloudName" => "qa-cloudinary-cloudname",
+            "Cloudinary__ApiKey" => "qa-cloudinary-apikey",
+            "Cloudinary__ApiSecret" => "qa-cloudinary-apisecret",
+            "Cors__AllowedOrigins" => "qa-cors-allowedorigins",
+            "OpenTelemetry__ApiKey" => "qa-telemetry-key",
+            "PayStack__BaseUrl" => "qa-paystack-baseurl",
+            "PayStack__SecretKey" => "qa-paystack-secretkey"
+          }
+          env_vars = secret_env_vars.map do |name, secret_name|
+            { "name" => name, "secretRef" => secret_name }
+          end
+          env_vars.concat([
+            { "name" => "ASPNETCORE_ENVIRONMENT", "value" => "Staging" },
+            { "name" => "Firebase__CredentialsPath", "value" => "/app/secrets/firebase-creds.json" },
+            { "name" => "OpenTelemetry__ServiceName", "value" => "Ecologistics.Api" },
+            { "name" => "OpenTelemetry__ServiceVersion", "value" => "1.0.0" },
+            { "name" => "OpenTelemetry__OtelEndpoint", "value" => "http://ecologistics-seq:5341/ingest/otlp" }
+          ])
+
+          existing_env = container["env"] || []
+          desired_names = env_vars.map { |item| item["name"] }
+          container["env"] = existing_env.reject { |item| desired_names.include?(item["name"]) } + env_vars
+
+          volume_name = "firebase-credentials"
+          volumes = template["volumes"] || []
+          template["volumes"] = volumes.reject { |item| item["name"] == volume_name } + [
+            {
+              "name" => volume_name,
+              "storageType" => "Secret",
+              "secrets" => [
+                { "secretRef" => "firebase-credentials", "path" => "firebase-creds.json" }
+              ]
+            }
+          ]
+
+          mounts = container["volumeMounts"] || []
+          container["volumeMounts"] = mounts.reject { |item| item["volumeName"] == volume_name } + [
+            { "volumeName" => volume_name, "mountPath" => "/app/secrets" }
+          ]
+
+          File.write(path, YAML.dump(app))
+          RUBY
+
+          az containerapp update \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --yaml "$APP_SPEC"
