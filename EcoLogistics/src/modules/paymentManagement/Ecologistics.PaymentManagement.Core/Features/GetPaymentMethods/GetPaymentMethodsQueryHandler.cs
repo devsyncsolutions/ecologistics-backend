@@ -15,12 +15,14 @@ public class GetPaymentMethodsQueryHandler(
         ArgumentNullException.ThrowIfNull(query);
 
         string userId = loggedInUserService.GetUserId();
-        IReadOnlyCollection<string> roles = loggedInUserService.Roles();
         IEnumerable<UserPaymentMethodDto> results;
 
         IQueryable<UserPaymentMethod> innerQuery = dbContext.UserPaymentMethods.AsQueryable();
 
-        if (roles.Contains(nameof(AccountType.Generator)))
+        UserRolesResponse roles = await bus.InvokeAsync<UserRolesResponse>(new GetUserRolesQuery(), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (roles.Roles.Contains(AccountType.Generator))
         {
             results = await innerQuery
                 .Where(pm => pm.CreatedBy == userId)

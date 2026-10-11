@@ -1,0 +1,7 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Ecologistics.Common.Contracts.Queries;
+
+public record GetUserRolesQuery;
+public record UserRolesResponse(IReadOnlyCollection<AccountType> Roles);

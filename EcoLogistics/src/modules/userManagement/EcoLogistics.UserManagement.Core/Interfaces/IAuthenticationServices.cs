@@ -9,4 +9,7 @@ public interface IAuthenticationServices
     Task<(string, string)>AuthenticateAsync(string phoneNumber, string otpCode, CancellationToken cancellationToken = default);
     Task<(string, string)>RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
     Task<string> RegisterAsync(ApplicationUser user, AccountType accountType, CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<AccountType>> GetUserRolesAsync(
+        string username,
+        CancellationToken cancellationToken = default);
 }

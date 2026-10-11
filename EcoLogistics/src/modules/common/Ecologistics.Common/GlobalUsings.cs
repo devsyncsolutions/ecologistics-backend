@@ -3,5 +3,6 @@
 
 global using System.Security.Cryptography;
 global using Ecologistics.Common.Abstractions;
+global using Ecologistics.Common.Enums;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.Extensions.Logging;

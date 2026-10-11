@@ -49,6 +49,8 @@ internal sealed class MockAuthenticationServices : IAuthenticationServices
         return Task.FromResult(userId);
     }
 
+    public Task<IReadOnlyCollection<AccountType>> GetUserRolesAsync(string username, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
     /// <summary>
     /// Gets a registered user by ID for verification purposes.
     /// </summary>

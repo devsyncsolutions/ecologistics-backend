@@ -1,5 +1,3 @@
-using Ecologistics.Common.Enums;
-
 namespace Ecologistics.Common.Contracts.Commands;
 
 public record CreateDeviceTokenCommand(

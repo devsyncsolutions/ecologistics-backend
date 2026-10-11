@@ -125,4 +125,13 @@ public sealed class AuthenticationServices(
 
         return user.Id;
     }
+
+    public async Task<IReadOnlyCollection<AccountType>> GetUserRolesAsync(string username, CancellationToken cancellationToken = default)
+    {
+        ApplicationUser user = await userManager.FindByNameAsync(username).ConfigureAwait(false) ??
+            throw new NotFoundException($"User with username {username} not found.");
+
+        IList<string> roles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
+        return roles.Select(Enum.Parse<AccountType>).ToList();
+    }
 }
