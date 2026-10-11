@@ -94,7 +94,7 @@ jobs:
           registryPassword: ${{ secrets.ECOLOGISTICSBEQA_REGISTRY_PASSWORD }}
           containerAppName: ecologistics-be-qa
           resourceGroup: DefaultResourceGroup-SUK
-          imageToBuild: ${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
+          imageToDeploy: ${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
 
       - name: Configure QA container environment and Firebase file mount
         env:
