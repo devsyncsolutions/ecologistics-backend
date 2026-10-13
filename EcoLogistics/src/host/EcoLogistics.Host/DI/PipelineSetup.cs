@@ -27,6 +27,16 @@ internal static class PipelineSetup
             ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
         });
 
+        app.MapHealthChecks("/health/live", new HealthCheckOptions
+        {
+            Predicate = _ => false
+        });
+
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = c => c.Tags.Contains("ready")
+        });
+
         app.UseExceptionHandler();
         app.UseCors("SecurePolicy");
         app.UseRouting();
