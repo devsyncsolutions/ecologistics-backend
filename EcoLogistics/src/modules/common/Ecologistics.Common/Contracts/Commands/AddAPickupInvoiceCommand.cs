@@ -7,4 +7,7 @@ public record AddAPickupInvoiceCommand(
     Guid PickupJobId,
     decimal Amount,
     Uri? InvoiceUrl,
-    string ContentName);
+    string ContentName,
+    string CollectorMemberId,
+    string CreatedBy,
+    decimal Commission);

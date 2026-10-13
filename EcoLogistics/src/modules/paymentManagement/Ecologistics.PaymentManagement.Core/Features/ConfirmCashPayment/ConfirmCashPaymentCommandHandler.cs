@@ -44,7 +44,7 @@ public class ConfirmCashPaymentCommandHandler(
             .Select(p => new { Id = p.Id.Value.ToString(), Status = p.Status.ToString() })
             .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-        if(existingPaymentByPickupId is not null)
+        if (existingPaymentByPickupId is not null)
             return new ConfirmCashPaymentResponse(existingPaymentByPickupId.Id, existingPaymentByPickupId.Status);
 
         string collectorMemberId = loggedInUserService.GetUserId();
@@ -60,23 +60,11 @@ public class ConfirmCashPaymentCommandHandler(
         if (pickupInvoice is null)
             throw new NotFoundException("Invoice was not found");
 
-        UserPaymentMethodId? generatorCashPaymentMethodId = await dbContext
-            .UserPaymentMethods
-            .Where(upm =>
-                upm.CreatedBy == pickupInvoice.CreatedBy &&
-                upm.Method == PaymentMethodType.Cash)
-            .Select(upm => upm.Id)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (generatorCashPaymentMethodId is null)
-            throw new NotFoundException("Cash payment method was not found");
-
         Payment newPayment = Payment.Create(
             pickupInvoice.AssociatedPickupId,
             pickupInvoice.CreatedBy!,
             pickupInvoice.CollectorMemberId,
-            generatorCashPaymentMethodId,
+            null, // PaymentMethodId is null for cash payments for now, as we want to support only cash payments for now. We can add support for other payment methods in the future.
             new Money(Currency.GHS, pickupInvoice.AmountPayable),
             new Money(Currency.GHS, pickupInvoice.Commission),
             true);

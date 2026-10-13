@@ -18,7 +18,6 @@ public class GeneratePickupJobInvoice(
 
         Pickup pickup = await dbContext
             .Pickups
-            .AsTracking()
             .FirstAsync(p => p.Id == new PickupId(context.Request.PickupId), cancellationToken)
             .ConfigureAwait(false);
 
@@ -47,10 +46,10 @@ public class GeneratePickupJobInvoice(
                 WasteContent: pickup.WasteContentName,
                 NumberOfPackages: pickup.NumberOfContainers,
                 WeightForEachPackage: $"{averageWeight.AverageWeight} {averageWeight.UnitOfMeasurement}",
-                TotalWeight: $"{averageWeight.AverageWeight *  pickup.NumberOfContainers} {averageWeight.UnitOfMeasurement}",
+                TotalWeight: $"{averageWeight.AverageWeight * pickup.NumberOfContainers} {averageWeight.UnitOfMeasurement}",
                 PricePerPackage: averageWeight.Amount,
                 PackageSize: averageWeight.Name,
-                TotalPrice:  totalPrice,
+                TotalPrice: totalPrice,
                 PickupDate: pickup.TimeStamp.ScheduledForPickupAt,
                 PaymentMethod: string.Empty,
                 CollectorFullName: $"{collector.FirstName} {collector.LastName}",
@@ -64,9 +63,13 @@ public class GeneratePickupJobInvoice(
         await bus
             .InvokeAsync(
                 new AddAPickupInvoiceCommand(
-                    pickup.Id.Value, totalPrice,
+                    pickup.Id.Value,
+                    totalPrice,
                     string.IsNullOrEmpty(invoiceUrl) ? null : new Uri(invoiceUrl),
-                    pickup.WasteContentName),
+                    pickup.WasteContentName,
+                    pickup.CollectorMemberId!,
+                    pickup.CreatedBy!,
+                    averageWeight.Amount),
                 cancellationToken).ConfigureAwait(false);
     }
 }

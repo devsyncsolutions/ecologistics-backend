@@ -248,6 +248,7 @@ internal static class ServicesSetup
             options.CodeGeneration.AlwaysUseServiceLocationFor<IUserManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<ITenantManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IPickupManagementDbContext>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<Ecologistics.PickupManagement.Domain.Interfaces.IPickupServices>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<INotificationsManagementDbContext>();
             options.CodeGeneration.AlwaysUseServiceLocationFor<IPaymentManagementDbContext>();
             options.Discovery.IncludeAssembly(typeof(RegisterUserAccountCommandHandler).Assembly);

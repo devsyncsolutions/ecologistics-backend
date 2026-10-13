@@ -18,7 +18,11 @@ public class AddAPickupInvoiceCommandHandler(IPaymentManagementDbContext dbConte
             AmountPayable = command.Amount,
             InvoiceUrl = command.InvoiceUrl,
             ContentName = command.ContentName,
-            AssociatedPickupId = command.PickupJobId
+            AssociatedPickupId = command.PickupJobId,
+            CreatedBy = command.CreatedBy,
+            CollectorMemberId = command.CollectorMemberId,
+            Commission = command.Commission,
+            Status = InvoiceStatus.Unpaid,
         };
 
         await dbContext.PickupJobInvoices.AddAsync(invoice, cancellationToken).ConfigureAwait(false);

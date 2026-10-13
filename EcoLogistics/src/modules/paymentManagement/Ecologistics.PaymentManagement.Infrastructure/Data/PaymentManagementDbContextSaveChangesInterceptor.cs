@@ -43,17 +43,17 @@ public sealed class PaymentManagementDbContextSaveChangesInterceptor : SaveChang
             {
                 case EntityState.Added:
                     entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
-                    entry.Entity.CreatedBy = _loggedInUserService.GetUserId();
+                    entry.Entity.CreatedBy = string.IsNullOrWhiteSpace(entry.Entity.CreatedBy) ? _loggedInUserService.GetUserId() : entry.Entity.CreatedBy;
                     break;
                 case EntityState.Deleted:
                     entry.Entity.DeletedAt = DateTimeOffset.UtcNow;
                     entry.Entity.IsDeleted = true;
                     entry.State = EntityState.Modified;
-                    entry.Entity.DeletedBy = _loggedInUserService.GetUserId();
+                    entry.Entity.DeletedBy = string.IsNullOrWhiteSpace(entry.Entity.DeletedBy) ? _loggedInUserService.GetUserId() : entry.Entity.DeletedBy;
                     break;
                 case EntityState.Modified:
                     entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
-                    entry.Entity.UpdatedBy = _loggedInUserService.GetUserId();
+                    entry.Entity.UpdatedBy = string.IsNullOrWhiteSpace(entry.Entity.UpdatedBy) ? _loggedInUserService.GetUserId() : entry.Entity.UpdatedBy;
                     await PublishForModificationAuditing(entry).ConfigureAwait(false);
                     break;
             }
