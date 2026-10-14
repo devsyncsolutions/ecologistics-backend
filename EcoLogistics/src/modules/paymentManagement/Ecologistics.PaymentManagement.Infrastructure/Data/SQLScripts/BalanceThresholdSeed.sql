@@ -1,10 +1,8 @@
--- Seed script for BalanceThresholdPerDistrict
-
-INSERT INTO "BalanceThresholdPerDistrict"
+INSERT INTO "BalanceThresholdsPerDistricts"
 (
     "Id",
     "DistrictId",
-    "ThresholdAmount",
+    "BalanceThresholdAmount",
     "CreatedAt",
     "CreatedBy",
     "UpdatedAt",
@@ -27,6 +25,6 @@ SELECT
 FROM "Districts" d
 WHERE NOT EXISTS (
     SELECT 1
-    FROM "BalanceThresholdPerDistrict" btpd
+    FROM "BalanceThresholdsPerDistricts" btpd
     WHERE btpd."DistrictId" = d."Id"
 );

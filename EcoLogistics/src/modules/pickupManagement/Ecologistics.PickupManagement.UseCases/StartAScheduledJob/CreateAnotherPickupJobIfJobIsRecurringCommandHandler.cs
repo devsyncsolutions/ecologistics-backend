@@ -42,7 +42,8 @@ public class CreateAnotherPickupJobIfJobIsRecurringCommandHandler(
             pickup.Priority,
             reference,
             pickup.RecurringProperties.DaysIntervalForPickupIfRecurring,
-            pickup.NumberOfContainers);
+            pickup.NumberOfContainers,
+            pickup.CreatedBy!);
 
         newRecurringPickup.UpdateCollectorMemberId(pickup.CollectorMemberId!);
         newRecurringPickup.UpdateParentPickupId(pickup.Id);

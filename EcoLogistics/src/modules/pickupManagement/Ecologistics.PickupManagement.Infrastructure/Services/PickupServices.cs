@@ -26,10 +26,11 @@ public class PickupServices(
         return reference;
     }
 
-    public async Task<(bool, string?)> IsEligibleToAcceptAPickup(CancellationToken cancellationToken)
+    public async Task<EligibilityResult> IsEligibleToAcceptAPickup(CancellationToken cancellationToken)
     {
+        string districtId = loggedInUserService.GetDistrictId();
         Task<decimal> districtTask = bus.InvokeAsync<decimal>(
-            new GetDistrictBalanceQuery(Guid.Parse(loggedInUserService.GetUserId())), cancellationToken);
+            new GetDistrictBalanceQuery(Guid.Parse(districtId)), cancellationToken);
         Task<decimal> tenantTask = bus.InvokeAsync<decimal>(
             new GetTenantBalanceQuery(), cancellationToken);
 
@@ -37,7 +38,7 @@ public class PickupServices(
         decimal tenantBalance = await tenantTask.ConfigureAwait(false);
 
         if(tenantBalance > balance)
-            return (false, "Your tenant credit is above the least threshold to accept a pickup job. Please pay off your owned credit.");
+            return new EligibilityResult(false, "Your tenant credit is above the least threshold to accept a pickup job. Please pay off your owned credit.");
 
         bool alreadyMatchedWithAnActiveJob = await dbContext
             .Pickups
@@ -48,9 +49,9 @@ public class PickupServices(
             .ConfigureAwait(false);
 
         if(alreadyMatchedWithAnActiveJob)
-            return (false, "You are already matched with an active pickup job. Please complete it before accepting a new one.");
+            return new EligibilityResult(false, "You are already matched with an active pickup job. Please complete it before accepting a new one.");
 
-        return (true, null);
+        return new EligibilityResult(true, null);
     }
 
     public async Task<List<PickupHistoryAsCollectorDto>> GetPickupHistoryAsCollector(int page, int pageSize,

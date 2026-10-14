@@ -29,12 +29,12 @@ public class Pickup : BaseAggregate<PickupId>
         PickupFeeId pickupFeeId, PickupType type, double latitude, double longitude, string formattedAddress,
         string ghanaPostGpsAddress, string? landmark, string? contactName, string? contactPhone,
         string? extraNotes, DateTimeOffset scheduledForPickupAt, string wasteContentName, Priority? priority,
-        string reference, int daysIntervalForPickupIfRecurring, int numberOfContainers)
+        string reference, int daysIntervalForPickupIfRecurring, int numberOfContainers, string createdBy)
     {
-        var point = CreatePointCalculation.CreatePoint(longitude, latitude);
+        Point point = CreatePointCalculation.CreatePoint(longitude, latitude);
         var timeStamp = new TimeStamp
         {
-            ScheduledForPickupAt = scheduledForPickupAt
+            ScheduledForPickupAt = scheduledForPickupAt.ToUniversalTime()
         };
 
         var newPickup = new Pickup
@@ -54,7 +54,8 @@ public class Pickup : BaseAggregate<PickupId>
             Reference = reference,
             WasteContentName = wasteContentName,
             Priority = priority ?? Priority.High,
-            NumberOfContainers = numberOfContainers
+            NumberOfContainers = numberOfContainers,
+            CreatedBy = createdBy
         };
 
         newPickup.RecurringProperties = type == PickupType.Recurring ?
@@ -71,7 +72,7 @@ public class Pickup : BaseAggregate<PickupId>
             newPickup.Coordinates,
             newPickup.NumberOfContainers,
             newPickup.PickupFeeId,
-            newPickup.CreatedBy!));
+            newPickup.CreatedBy));
 
         return newPickup;
     }
@@ -213,7 +214,7 @@ public class Pickup : BaseAggregate<PickupId>
         ExtraNotes = extraNotes;
         Priority = priority ?? Priority;
         WasteContentName = wasteContentName ?? WasteContentName;
-        TimeStamp.ScheduledForPickupAt = scheduledForPickupAt ?? TimeStamp.ScheduledForPickupAt;
+        TimeStamp.ScheduledForPickupAt = scheduledForPickupAt?.ToUniversalTime() ?? TimeStamp.ScheduledForPickupAt;
 
         AddDomainEvent(new PickupUpdatedEvent(Id));
     }

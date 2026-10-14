@@ -59,7 +59,7 @@ public class CreateAPickupJobCommandHandler(
         if (!pickupFeeExists)
             throw new NotFoundException("Specified Pickup fee not found.");
 
-        var type = Enum.Parse<PickupType>(command.Type);
+        PickupType type = Enum.Parse<PickupType>(command.Type);
 
         string reference = await pickupServices.GenerateReference(command.FormattedAddress, cancellationToken).ConfigureAwait(false);
         var newPickup = Pickup.Create(
@@ -73,12 +73,13 @@ public class CreateAPickupJobCommandHandler(
             command.ContactName,
             command.ContactPhone,
             command.ExtraNotes,
-            DateTimeOffset.Parse(command.ScheduledForPickupAt, CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse(command.ScheduledForPickupAt, CultureInfo.InvariantCulture).ToUniversalTime(),
             command.WasteContentName,
             Enum.Parse<Priority>(command.Priority),
             reference,
             command.DaysIntervalForPickupIfRecurring,
-            command.NumberOfContainers);
+            command.NumberOfContainers,
+            loggedInUserService.GetUserId());
 
         await dbContext.Pickups.AddAsync(newPickup, cancellationToken).ConfigureAwait(false);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

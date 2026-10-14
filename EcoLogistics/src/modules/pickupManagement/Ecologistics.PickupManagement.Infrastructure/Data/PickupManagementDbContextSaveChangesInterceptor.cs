@@ -58,17 +58,17 @@ public sealed class PickupManagementDbContextSaveChangesInterceptor : SaveChange
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
+                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow.ToUniversalTime();
                     entry.Entity.CreatedBy = _loggedInUserService.GetUserId();
                     break;
                 case EntityState.Deleted:
-                    entry.Entity.DeletedAt = DateTimeOffset.UtcNow;
+                    entry.Entity.DeletedAt = DateTimeOffset.UtcNow.ToUniversalTime();
                     entry.Entity.IsDeleted = true;
                     entry.State = EntityState.Modified;
                     entry.Entity.DeletedBy = _loggedInUserService.GetUserId();
                     break;
                 case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
+                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow.ToUniversalTime();
                     entry.Entity.UpdatedBy = _loggedInUserService.GetUserId();
                     await PublishForModificationAuditing(entry).ConfigureAwait(false);
                     break;

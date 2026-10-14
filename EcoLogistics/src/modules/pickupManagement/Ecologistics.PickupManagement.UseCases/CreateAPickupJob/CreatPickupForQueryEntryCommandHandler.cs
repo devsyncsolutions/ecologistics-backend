@@ -35,7 +35,7 @@ public class CreatPickupForQueryEntryCommandHandler(IPickupManagementDbContext d
             Commission = fee.Commission,
             AverageWeight = $"{fee.AvarageWeight} {fee.UnitOfMeasurement}",
             Coordinates = command.Coordinates,
-            NumberOfContainers = command.NumberOfContainers
+            NumberOfContainers = command.NumberOfContainers,
         };
 
         await dbContext.PickupsForQuerying.AddAsync(pickupForQuery, cancellationToken).ConfigureAwait(false);
