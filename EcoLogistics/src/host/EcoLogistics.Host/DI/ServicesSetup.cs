@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Ecologistics.PaymentManagement.Core.Features.GetPaymentMethods;
+using Serilog;
+using Serilog.Events;
 
 namespace EcoLogistics.Host.DI;
 
@@ -32,6 +34,7 @@ internal static class ServicesSetup
         ConfigureTickerQ(builder);
         ConfigureCloudinary(builder);
         ConfigureSignalR(builder);
+        ConfigureLogging(builder);
 
         return builder.Build();
     }
@@ -416,7 +419,50 @@ internal static class ServicesSetup
             return new TracedRedisDatabase(mux.GetDatabase());
         });
     }
+    private static void ConfigureLogging(WebApplicationBuilder builder)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+            .CreateLogger();
 
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Host.UseSerilog((_, _, configuration) =>
+            {
+                configuration
+                    .MinimumLevel.Debug()
+                    .MinimumLevel.Override("TickerQ", LogEventLevel.Error)
+                    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+            });
+        }
+        else
+        {
+            builder.Host.UseSerilog((_, _, configuration) =>
+            {
+                configuration
+                    .MinimumLevel.Information()
+                    .MinimumLevel.Override("TickerQ", LogEventLevel.Error)
+                    .MinimumLevel.Override("ZiggyCreatures.Caching.Fusion", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Wolverine", LogEventLevel.Warning)
+                    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+
+                // Only configure Sentry if DSN is provided
+                string? sentryDsn = builder.Configuration["Sentry:Dsn"];
+                if (!string.IsNullOrEmpty(sentryDsn))
+                {
+                    configuration.WriteTo.Sentry(options =>
+                    {
+                        options.MinimumBreadcrumbLevel = LogEventLevel.Debug;
+                        options.MinimumEventLevel = LogEventLevel.Warning;
+                        options.Dsn = sentryDsn;
+                        options.TracesSampleRate = 0.1;
+                        options.EnableLogs = true;
+                    });
+                }
+            });
+        }
+    }
     private static string GetPartitionKey(HttpContext context)
     {
         if (context.User.Identity?.IsAuthenticated != true)
