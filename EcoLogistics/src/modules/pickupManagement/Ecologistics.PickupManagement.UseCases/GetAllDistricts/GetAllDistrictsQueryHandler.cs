@@ -1,3 +1,5 @@
+
+
 namespace Ecologistics.PickupManagement.UseCases.GetAllDistricts;
 
 public class GetAllDistrictsQueryHandler(IPickupManagementDbContext dbContext)
@@ -6,7 +8,7 @@ public class GetAllDistrictsQueryHandler(IPickupManagementDbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var innerQuery = dbContext.Districts.AsQueryable();
+        IQueryable<District> innerQuery = dbContext.Districts.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Region))
             innerQuery = innerQuery.Where(d => d.Region == Enum.Parse<Region>(query.Region));
@@ -16,7 +18,7 @@ public class GetAllDistrictsQueryHandler(IPickupManagementDbContext dbContext)
             innerQuery = innerQuery.Where(d => d.Name.ToLower().Contains(query.SearchKey.ToLower()));
 #pragma warning restore CA1862
 
-        var list = innerQuery
+        IQueryable<GetAllDistrictDto> list = innerQuery
             .OrderBy(d => d.Name)
             .ThenBy(d => d.Region)
             .Select(d => new GetAllDistrictDto(d.Id.Value.ToString(), d.Name, nameof(d.Region)));
@@ -24,7 +26,7 @@ public class GetAllDistrictsQueryHandler(IPickupManagementDbContext dbContext)
         int totalCount = await list.CountAsync(cancellationToken).ConfigureAwait(false);
         int pageSize = query.PageSize <= 50 ? query.PageSize : 50;
 
-        var pagedResult = await list
+        List<GetAllDistrictDto> pagedResult = await list
             .Skip((query.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken)

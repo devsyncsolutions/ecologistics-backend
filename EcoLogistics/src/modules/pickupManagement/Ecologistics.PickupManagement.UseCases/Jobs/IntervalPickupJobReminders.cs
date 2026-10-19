@@ -8,13 +8,14 @@ public class IntervalPickupJobReminders(
     IMessageBus bus,
     ITextMessagingService textMessagingService)
 {
+    [TickerFunction("SendRemindersAsync", "*/30 * * * * *")]
     public async Task SendRemindersAsync(
         TickerFunctionContext<IntervalReminderRequest> context,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var request = context.Request;
+        IntervalReminderRequest request = context.Request;
 
         // check the time gab, if within the 30 minutes, send a reminder or close this particular background job
         if (request.ScheduledForPickupAt < DateTime.UtcNow.AddMinutes(-30))

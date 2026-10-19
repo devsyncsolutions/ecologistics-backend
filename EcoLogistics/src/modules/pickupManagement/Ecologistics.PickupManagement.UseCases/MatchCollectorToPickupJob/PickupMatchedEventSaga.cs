@@ -35,6 +35,9 @@ public record SendTextMessagesForMatchedJobCompletedCommand(
     PickupId PickupId
 );
 
+public record GeneratePickupJobInvoiceCompletedCommand(
+    [property: SagaIdentity] Guid SagaId);
+
 public sealed class PickupMatchedEventSaga : Saga
 {
     public Guid Id { get; set; }
@@ -42,16 +45,23 @@ public sealed class PickupMatchedEventSaga : Saga
     public DateTimeOffset StartedAt { get; set; }
     public bool RemoveMatchedJobFromQueryListCompleted { get; set; }
     public bool SendNotificationsForMatchedJobCompleted { get; set; }
+    public bool SendTextMessagesForMatchedJobCompleted { get; set; }
+    public bool GeneratePickupJobInvoiceCompleted { get; set; }
 
-    public static async Task<(PickupMatchedEventSaga, RemoveMatchedJobFromQueryListCommand)> Start(PickupMatchedEvent @event)
+    public static async Task<(PickupMatchedEventSaga, RemoveMatchedJobFromQueryListCommand)> Start(
+        PickupMatchedEvent @event,
+        ITimeTickerManager<TimeTickerEntity> timeTicker,
+        TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(@event);
+        ArgumentNullException.ThrowIfNull(timeTicker);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         var saga = new PickupMatchedEventSaga
         {
             Id = Guid.NewGuid(),
             PickupId = @event.Id,
-            StartedAt = DateTimeOffset.UtcNow
+            StartedAt = timeProvider.GetUtcNow()
         };
 
         var command = new RemoveMatchedJobFromQueryListCommand(
@@ -85,5 +95,19 @@ public sealed class PickupMatchedEventSaga : Saga
             command.PickupReference,
             command.TriggeredBy,
             command.UserId);
+    }
+
+    public GeneratePickupJobInvoiceRequest Handle(SendTextMessagesForMatchedJobCompletedCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        SendTextMessagesForMatchedJobCompleted = true;
+        return new GeneratePickupJobInvoiceRequest(command.PickupId.Value, command.SagaId);
+    }
+
+    public void Handle(GeneratePickupJobInvoiceCompletedCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        GeneratePickupJobInvoiceCompleted = true;
+        MarkCompleted();
     }
 }

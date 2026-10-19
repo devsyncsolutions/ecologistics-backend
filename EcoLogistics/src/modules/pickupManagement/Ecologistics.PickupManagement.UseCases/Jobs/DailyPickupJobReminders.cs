@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using TickerQ.Utilities.Enums;
+
 namespace Ecologistics.PickupManagement.UseCases.Jobs;
 
 public record IntervalReminderRequest(
-    Guid PickupId,
     string Reference,
     DateTimeOffset ScheduledForPickupAt,
     string CollectorMemberId,
@@ -18,8 +19,11 @@ public class DailyPickupJobReminders(
     IPickupManagementDbContext dbContext,
     ICronTickerManager<CronTickerEntity> cronTickerManager)
 {
-    [TickerFunction("DailyPickupJobReminders", "0 0 1 * * *")]
-    public async Task FetchAndSetupReminders(TickerFunctionContext context, CancellationToken cancellationToken)
+    [TickerFunction(
+        "FetchAndSetupReminders",
+        "0 6 * * *",
+        TickerTaskPriority.LongRunning)]
+    public async Task FetchAndSetupReminders(CancellationToken cancellationToken)
     {
         var pickupJobsDueToday = await dbContext
             .Pickups
@@ -44,11 +48,10 @@ public class DailyPickupJobReminders(
         [
             .. pickupJobsDueToday.Select(pickup => new CronTickerEntity
             {
-                Function = nameof(IntervalPickupJobReminders.SendRemindersAsync),
+                Function = "SendRemindersAsync",
                 Expression = "*/30 * * * *",
                 IsEnabled  = true,
                 Request = TickerHelper.CreateTickerRequest(new IntervalReminderRequest(
-                        pickup.Id.Value,
                         pickup.Reference,
                         pickup.ScheduledForPickupAt,
                         pickup.CollectorMemberId!,

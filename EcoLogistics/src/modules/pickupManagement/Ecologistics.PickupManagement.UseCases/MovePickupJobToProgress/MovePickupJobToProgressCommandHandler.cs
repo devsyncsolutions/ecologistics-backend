@@ -6,8 +6,7 @@ namespace Ecologistics.PickupManagement.UseCases.MovePickupJobToProgress;
 
 public class MovePickupJobToProgressCommandHandler(
     IPickupManagementDbContext dbContext,
-    IFusionCache cache,
-    ITimeTickerManager<TimeTickerEntity> timeTicker)
+    IFusionCache cache)
 {
     public async Task Handle(MovePickupJobToProgressCommand command, CancellationToken cancellationToken)
     {
@@ -15,7 +14,7 @@ public class MovePickupJobToProgressCommandHandler(
 
         await cache.GetOrSetAsync(
             CacheKeys.MovePickupToProgress(command.PickupJobId),
-            async _=> await RetrieveAndMovePickupToProgressAsync(dbContext, timeTicker, command, cancellationToken).ConfigureAwait(false),
+            async _=> await RetrieveAndMovePickupToProgressAsync(dbContext, command, cancellationToken).ConfigureAwait(false),
             new FusionCacheEntryOptions
             {
                 Duration = TimeSpan.FromHours(4),
@@ -27,7 +26,6 @@ public class MovePickupJobToProgressCommandHandler(
 
     private static async Task<Guid> RetrieveAndMovePickupToProgressAsync(
         IPickupManagementDbContext dbContext,
-        ITimeTickerManager<TimeTickerEntity> timeTicker,
         MovePickupJobToProgressCommand command,
         CancellationToken cancellationToken)
     {
@@ -39,15 +37,6 @@ public class MovePickupJobToProgressCommandHandler(
 
         pickup.MoveToProgress();
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        await timeTicker.AddAsync(new TimeTickerEntity
-        {
-            Function = nameof(GeneratePickupJobInvoice.GenerateInvoiceAndUpdateUrlAsync),
-            ExecutionTime = DateTime.UtcNow.AddSeconds(5),
-            Request = TickerHelper.CreateTickerRequest(new GeneratePickupJobInvoiceRequest(pickup.Id.Value)),
-            Retries = 3,
-            RetryIntervals = [5, 10, 15]
-        }, cancellationToken).ConfigureAwait(false);
 
         return pickup.Id.Value;
     }

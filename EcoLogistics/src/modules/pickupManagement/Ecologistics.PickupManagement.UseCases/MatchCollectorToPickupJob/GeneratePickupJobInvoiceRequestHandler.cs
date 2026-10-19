@@ -1,24 +1,31 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Ecologistics.PickupManagement.UseCases.Jobs;
+namespace Ecologistics.PickupManagement.UseCases.MatchCollectorToPickupJob;
 
-public record GeneratePickupJobInvoiceRequest(Guid PickupId);
+public record GeneratePickupJobInvoiceRequest(Guid PickupId, Guid SagaId);
 
-public class GeneratePickupJobInvoice(
+public class GeneratePickupJobInvoiceRequestHandler(
     IPickupManagementDbContext dbContext,
     IProcessFilesService processFilesService,
     IMessageBus bus)
 {
-    public async Task GenerateInvoiceAndUpdateUrlAsync(
-        TickerFunctionContext<GeneratePickupJobInvoiceRequest> context,
+    public async Task<GeneratePickupJobInvoiceCompletedCommand> Handle(
+        GeneratePickupJobInvoiceRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(request);
+
+        bool invoiceCreated = await bus
+            .InvokeAsync<bool>(new IsInvoiceCreatedQuery(request.PickupId), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (invoiceCreated)
+            return new GeneratePickupJobInvoiceCompletedCommand(request.SagaId);
 
         Pickup pickup = await dbContext
             .Pickups
-            .FirstAsync(p => p.Id == new PickupId(context.Request.PickupId), cancellationToken)
+            .FirstAsync(p => p.Id == new PickupId(request.PickupId), cancellationToken)
             .ConfigureAwait(false);
 
         var averageWeight = await dbContext.PickupFees
@@ -71,5 +78,7 @@ public class GeneratePickupJobInvoice(
                     pickup.CreatedBy!,
                     averageWeight.Amount),
                 cancellationToken).ConfigureAwait(false);
+
+        return new GeneratePickupJobInvoiceCompletedCommand(request.SagaId);
     }
 }

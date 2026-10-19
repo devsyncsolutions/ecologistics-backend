@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using TickerQ.Utilities.Base;
 
 namespace EcoLogistics.UserManagement.Core.Jobs;
 
@@ -12,7 +11,7 @@ public class ProcessProfileImageJob(
     ILogger<ProcessProfileImageJob> logger,
     IUserManagementDbContext dbContext)
 {
-    [TickerFunction("ProcessProfileImageJob")]
+    [TickerFunction("ProcessImageAsync")]
     public async Task ProcessImageAsync(
         TickerFunctionContext<ProcessProfileImageJobRequest> context,
         CancellationToken cancellationToken)
@@ -35,7 +34,7 @@ public class ProcessProfileImageJob(
             return;
         }
 
-        var user = await dbContext
+        ApplicationUser? user = await dbContext
             .ApplicationUsers
             .Where(u => u.UserName == context.Request.UserId)
             .FirstOrDefaultAsync(cancellationToken)

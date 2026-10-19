@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using EcoLogistics.UserManagement.Core.Jobs;
-using TickerQ.Utilities;
-using TickerQ.Utilities.Entities;
-using TickerQ.Utilities.Interfaces.Managers;
-
 namespace EcoLogistics.UserManagement.Presentation.Endpoints;
 
 public sealed class UpdateUserProfileImageEndpoint : ICarterModule
@@ -31,14 +26,14 @@ public sealed class UpdateUserProfileImageEndpoint : ICarterModule
         [FromServices] ITimeTickerManager<TimeTickerEntity> timeTicker,
         [FromServices] ILoggedInUserService loggedInUserService)
     {
-        var userProfileImage = httpContext.Request.Form.Files.FirstOrDefault(f => f.Name == "profilePicture");
+        IFormFile? userProfileImage = httpContext.Request.Form.Files.FirstOrDefault(f => f.Name == "profilePicture");
 
         if (userProfileImage is null)
             return Results.BadRequest();
 
-        var result = await timeTicker.AddAsync(new TimeTickerEntity
+        TickerResult<TimeTickerEntity> result = await timeTicker.AddAsync(new TimeTickerEntity
         {
-            Function = nameof(ProcessProfileImageJob.ProcessImageAsync),
+            Function = "ProcessImageAsync",
             ExecutionTime = DateTime.UtcNow.AddSeconds(5),
             Request = TickerHelper.CreateTickerRequest(new ProcessProfileImageJobRequest(loggedInUserService.GetUserId(), userProfileImage)),
             Retries = 3,
