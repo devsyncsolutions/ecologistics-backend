@@ -133,6 +133,7 @@ jobs:
               --pull always \
               --network ecologistics-net \
               -v "${FIREBASE_CREDS_PATH}:/app/firebase-creds.json:ro" \
+              -e ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
               -e ASPNETCORE_ENVIRONMENT=Staging \
               -e "ConnectionStrings__DefaultConnection=${{ secrets.QA_DB_CONNECTION_STRING }}" \
               -e "ConnectionStrings__RedisConnection=${{ secrets.QA_REDIS_CONNECTION_STRING }}" \
