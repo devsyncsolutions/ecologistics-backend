@@ -44,12 +44,12 @@ jobs:
           fi
           echo "✅ Image $IMAGE_REF confirmed in registry"
 
-      - name: Deploy to CloudClusters QA Servers
+      - name: Deploy to QA Servers
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.QA_SERVER_HOST }}
           username: ${{ secrets.QA_SERVER_USER }}
-          password: ${{ secrets.QA_SERVER_PASSWORD }}
+          key: ${{ secrets.QA_SERVER_SSH_KEY }}
           port: ${{ secrets.QA_SERVER_PORT }}
           script: |
             set -euo pipefail
