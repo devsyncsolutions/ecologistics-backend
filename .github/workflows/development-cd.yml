@@ -76,6 +76,13 @@ jobs:
             docker --version
             command -v lsof >/dev/null 2>&1 || true
 
+            if ! docker network inspect ecologistics-net >/dev/null 2>&1; then
+              echo "Creating Docker network ecologistics-net..."
+              docker network create ecologistics-net
+            else
+              echo "Docker network ecologistics-net already exists"
+            fi
+
             echo "Pulling $IMAGE_REF on server..."
             docker pull "$IMAGE_REF"
             EXPECTED_IMAGE_ID=$(docker inspect --format='{{.Id}}' "$IMAGE_REF")
