@@ -132,7 +132,6 @@ jobs:
               --restart unless-stopped \
               --pull always \
               --network ecologistics-net \
-              -p 8080:8080 \
               -v "${FIREBASE_CREDS_PATH}:/app/firebase-creds.json:ro" \
               -e ASPNETCORE_ENVIRONMENT=Staging \
               -e "ConnectionStrings__DefaultConnection=${{ secrets.QA_DB_CONNECTION_STRING }}" \
