@@ -5,7 +5,7 @@ namespace Ecologistics.PaymentManagement.Core.Features.IsInvoiceCreated;
 
 public class IsInvoiceCreatedQueryHandler(IPaymentManagementDbContext dbContext)
 {
-    public async Task<bool> Handler(IsInvoiceCreatedQuery query, CancellationToken cancellationToken)
+    public async Task<bool> Handle(IsInvoiceCreatedQuery query, CancellationToken cancellationToken)
         => await dbContext.PickupJobInvoices.AnyAsync(pi => pi.AssociatedPickupId == query.PickupId, cancellationToken)
             .ConfigureAwait(false);
 }
